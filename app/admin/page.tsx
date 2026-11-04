@@ -26,21 +26,20 @@ import {
   Settings,
   AlertCircle,
   Eye,
-  Sparkles,
 } from 'lucide-react';
 
 const PRESET_COLORS = [
   { name: 'Siyah', hex: '#18181b' },
   { name: 'Beyaz', hex: '#ffffff' },
   { name: 'Gümüş Gri', hex: '#9ca3af' },
-  { name: 'Altın / Sarı', hex: '#eab308' },
+  { name: 'Altın / Sarı', hex: '#d97706' },
   { name: 'Rose Gold', hex: '#fb7185' },
   { name: 'Lacivert', hex: '#1e3a8a' },
   { name: 'Okyanus Mavisi', hex: '#0284c7' },
   { name: 'Zümrüt Yeşili', hex: '#15803d' },
   { name: 'Haki / Yeşil', hex: '#4d7c0f' },
   { name: 'Bordo / Kırmızı', hex: '#dc2626' },
-  { name: 'Turuncu', hex: '#ea580c' },
+  { name: 'Krem / Bej', hex: '#e7e2d9' },
   { name: 'Füme / Antrasit', hex: '#374151' },
 ];
 
@@ -350,7 +349,7 @@ export default function AdminPage() {
           if (res.ok) {
             setData(parsed);
             if (parsed.settings) setSettingsForm(parsed.settings);
-            showToast('Tüm ürünler ve ayarlar JSON dosyasından başarıyla yüklendi!');
+            showToast('Tüm ürünler ve ayarlar JSON dosyasından yüklendi!');
           }
         } else {
           alert('Geçersiz JSON formatı.');
@@ -382,15 +381,21 @@ export default function AdminPage() {
   // Login Screen
   if (!isAuthenticated) {
     return (
-      <div className="min-h-screen bg-[#090a0f] flex items-center justify-center p-4">
-        <div className="bg-[#12141e] border border-white/[0.1] rounded-3xl p-8 max-w-md w-full shadow-2xl text-center">
-          <div className="w-14 h-14 bg-gradient-to-br from-amber-400 to-amber-600 text-black rounded-2xl flex items-center justify-center mx-auto mb-5 shadow-lg shadow-amber-500/10">
-            <Lock className="w-6 h-6 text-black" />
+      <div className="min-h-screen flex items-center justify-center p-4" style={{ background: 'var(--bg)', color: 'var(--text)' }}>
+        <div
+          className="rounded-2xl p-8 max-w-sm w-full shadow-lg text-center"
+          style={{ background: 'var(--card)', border: '1px solid var(--border)' }}
+        >
+          <div
+            className="w-12 h-12 rounded-full flex items-center justify-center mx-auto mb-4"
+            style={{ background: 'var(--card-hover)', color: 'var(--accent)' }}
+          >
+            <Lock className="w-5 h-5" />
           </div>
 
-          <h1 className="text-2xl font-black text-white mb-1">Yönetim Paneli</h1>
-          <p className="text-xs text-neutral-400 mb-6">
-            Ürünleri, fiyatları ve renk seçeneklerini yönetmek için PIN giriniz.
+          <h1 className="text-xl font-medium mb-1" style={{ color: 'var(--text)' }}>Yönetim Girişi</h1>
+          <p className="text-xs mb-6" style={{ color: 'var(--muted)' }}>
+            Katalog ve ürünleri yönetmek için PIN şifrenizi giriniz.
           </p>
 
           <form onSubmit={handleLogin} className="space-y-4">
@@ -402,33 +407,40 @@ export default function AdminPage() {
                   setPinInput(e.target.value);
                   setPinError(false);
                 }}
-                placeholder="Yönetim Şifresi (Varsayılan: 1234)"
+                placeholder="Şifre (Varsayılan: 1234)"
                 autoFocus
-                className="w-full text-center px-4 py-3 bg-white/[0.05] border border-white/[0.1] rounded-2xl text-white font-semibold focus:outline-none focus:border-amber-400 focus:ring-2 focus:ring-amber-400/20 transition"
+                className="w-full text-center px-4 py-2.5 rounded-full border text-sm font-medium focus:outline-none focus:ring-1 transition"
+                style={{
+                  background: 'var(--bg)',
+                  borderColor: pinError ? '#ef4444' : 'var(--border)',
+                  color: 'var(--text)',
+                }}
               />
               {pinError && (
-                <p className="text-xs text-rose-400 font-semibold mt-2 flex items-center justify-center gap-1">
+                <p className="text-xs mt-2 flex items-center justify-center gap-1 text-red-500 font-medium">
                   <AlertCircle className="w-3.5 h-3.5" />
-                  Hatalı şifre. (Varsayılan şifre: 1234)
+                  Hatalı şifre. (Varsayılan: 1234)
                 </p>
               )}
             </div>
 
             <button
               type="submit"
-              className="w-full py-3.5 bg-gradient-to-r from-amber-400 to-amber-500 hover:from-amber-300 hover:to-amber-400 text-black font-black rounded-2xl shadow-lg transition"
+              className="w-full py-2.5 rounded-full text-sm font-medium text-white transition hover:opacity-90 shadow-sm"
+              style={{ background: 'var(--text)', color: 'var(--bg)' }}
             >
-              Panele Giriş Yap
+              Giriş Yap
             </button>
           </form>
 
-          <div className="mt-6 pt-6 border-t border-white/[0.08]">
+          <div className="mt-6 pt-5" style={{ borderTop: '1px solid var(--border)' }}>
             <Link
               href="/"
-              className="inline-flex items-center gap-2 text-xs font-semibold text-neutral-400 hover:text-white transition"
+              className="inline-flex items-center gap-1.5 text-xs transition hover:opacity-70"
+              style={{ color: 'var(--muted)' }}
             >
               <ArrowLeft className="w-3.5 h-3.5" />
-              <span>Ana Sayfaya / Canlı Vitrine Dön</span>
+              <span>Vitrine Dön</span>
             </Link>
           </div>
         </div>
@@ -437,168 +449,171 @@ export default function AdminPage() {
   }
 
   return (
-    <div className="min-h-screen bg-[#090a0f] text-neutral-100 font-sans pb-24">
+    <div className="min-h-screen flex flex-col pb-20" style={{ background: 'var(--bg)', color: 'var(--text)' }}>
       {/* Toast Notification */}
       {statusMessage && (
-        <div className="fixed bottom-6 right-6 z-50 bg-[#151824] text-white px-5 py-3 rounded-2xl shadow-2xl flex items-center gap-3 text-xs font-bold border border-white/[0.15] animate-bounce">
-          <Check className="w-4 h-4 text-emerald-400" />
+        <div
+          className="fixed bottom-6 right-6 z-50 px-4 py-2.5 rounded-full shadow-lg flex items-center gap-2 text-xs font-medium border"
+          style={{ background: 'var(--card)', borderColor: 'var(--border)', color: 'var(--text)' }}
+        >
+          <Check className="w-4 h-4 text-emerald-600" />
           <span>{statusMessage}</span>
         </div>
       )}
 
       {/* Admin Header */}
-      <header className="bg-[#0e1018] border-b border-white/[0.08] sticky top-0 z-30 backdrop-blur-xl">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex items-center justify-between h-20 gap-4">
-            <div className="flex items-center gap-4">
+      <header className="sticky top-0 z-30 backdrop-blur-md border-b" style={{ background: 'rgba(250,248,244,0.95)', borderColor: 'var(--border)' }}>
+        <div className="max-w-6xl mx-auto px-4 sm:px-6">
+          <div className="flex items-center justify-between h-16 gap-4">
+            <div className="flex items-center gap-3">
               <Link
                 href="/"
-                className="p-2.5 rounded-xl bg-white/[0.05] hover:bg-white/[0.1] text-neutral-300 transition border border-white/[0.08]"
+                className="p-2 rounded-full transition hover:opacity-70"
+                style={{ color: 'var(--muted)' }}
                 title="Vitrine Dön"
               >
                 <ArrowLeft className="w-4 h-4" />
               </Link>
               <div>
-                <h1 className="text-xl font-black text-white flex items-center gap-2.5">
-                  <span>Ürün & Fiyat Yönetim Paneli</span>
-                  <span className="text-[10px] font-mono font-bold px-2 py-0.5 rounded-full bg-emerald-950 text-emerald-400 border border-emerald-500/20">
-                    CANLI
-                  </span>
+                <h1 className="text-base font-medium" style={{ color: 'var(--text)' }}>
+                  Yönetim Paneli
                 </h1>
-                <p className="text-xs text-neutral-400">
-                  Bilgisayarınızdan anlık ürün, görsel, fiyat ve renk kontrolü
-                </p>
               </div>
             </div>
 
             {/* Quick Actions */}
-            <div className="flex items-center gap-2.5">
+            <div className="flex items-center gap-2">
               <Link
                 href="/"
                 target="_blank"
-                className="hidden sm:inline-flex items-center gap-2 px-3.5 py-2 text-xs font-bold text-neutral-300 bg-white/[0.05] hover:bg-white/[0.1] border border-white/[0.08] rounded-full transition"
+                className="hidden sm:inline-flex items-center gap-1.5 px-3 py-1.5 text-xs rounded-full border transition hover:opacity-70"
+                style={{ borderColor: 'var(--border)', color: 'var(--muted)' }}
               >
                 <Eye className="w-3.5 h-3.5" />
-                <span>Canlı Vitrin</span>
+                <span>Vitrin</span>
               </Link>
 
               <button
                 onClick={handleDownloadJSON}
-                className="inline-flex items-center gap-1.5 px-3.5 py-2 text-xs font-bold text-neutral-300 bg-white/[0.05] hover:bg-white/[0.1] border border-white/[0.08] rounded-full transition"
-                title="Yedek JSON indir"
+                className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs rounded-full border transition hover:opacity-70"
+                style={{ borderColor: 'var(--border)', color: 'var(--muted)' }}
+                title="Yedek İndir"
               >
                 <Download className="w-3.5 h-3.5" />
-                <span className="hidden md:inline">Yedek İndir</span>
+                <span className="hidden md:inline">Yedek Al</span>
               </button>
 
               <button
                 onClick={handleOpenAddModal}
-                className="inline-flex items-center gap-2 px-4 py-2.5 bg-gradient-to-r from-amber-400 to-amber-500 hover:from-amber-300 hover:to-amber-400 text-black rounded-full text-xs font-black shadow-lg shadow-amber-500/20 transition"
+                className="inline-flex items-center gap-1.5 px-4 py-1.5 rounded-full text-xs font-medium text-white transition hover:opacity-90 shadow-sm"
+                style={{ background: 'var(--text)', color: 'var(--bg)' }}
               >
-                <Plus className="w-4 h-4" />
-                <span>Yeni Ürün Ekle</span>
+                <Plus className="w-3.5 h-3.5" />
+                <span>Ürün Ekle</span>
               </button>
             </div>
           </div>
 
           {/* Sub Navigation */}
-          <div className="flex items-center gap-6 border-t border-white/[0.06] pt-1">
+          <div className="flex items-center gap-6 pt-1">
             <button
               onClick={() => setActiveTab('products')}
-              className={`py-3 text-xs font-bold border-b-2 transition flex items-center gap-2 ${
-                activeTab === 'products'
-                  ? 'border-amber-400 text-amber-300'
-                  : 'border-transparent text-neutral-400 hover:text-white'
-              }`}
+              className="py-2.5 text-xs font-medium border-b-2 transition flex items-center gap-1.5"
+              style={{
+                borderColor: activeTab === 'products' ? 'var(--text)' : 'transparent',
+                color: activeTab === 'products' ? 'var(--text)' : 'var(--muted)',
+              }}
             >
-              <span>Ürünler Kataloğu</span>
-              <span className="bg-white/[0.08] text-neutral-300 text-[10px] px-2 py-0.5 rounded-full font-mono">
+              <span>Ürünler</span>
+              <span className="text-[10px] px-1.5 py-0.2 rounded-full" style={{ background: 'var(--card-hover)', color: 'var(--muted)' }}>
                 {data.products.length}
               </span>
             </button>
             <button
               onClick={() => setActiveTab('settings')}
-              className={`py-3 text-xs font-bold border-b-2 transition flex items-center gap-2 ${
-                activeTab === 'settings'
-                  ? 'border-amber-400 text-amber-300'
-                  : 'border-transparent text-neutral-400 hover:text-white'
-              }`}
+              className="py-2.5 text-xs font-medium border-b-2 transition flex items-center gap-1.5"
+              style={{
+                borderColor: activeTab === 'settings' ? 'var(--text)' : 'transparent',
+                color: activeTab === 'settings' ? 'var(--text)' : 'var(--muted)',
+              }}
             >
               <Settings className="w-3.5 h-3.5" />
-              <span>Site & İletişim Ayarları</span>
+              <span>Ayarlar</span>
             </button>
           </div>
         </div>
       </header>
 
       {/* Main Admin Area */}
-      <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+      <main className="max-w-6xl w-full mx-auto px-4 sm:px-6 py-8 flex-1">
         {activeTab === 'products' ? (
           <div>
             {/* Filter / Search Bar */}
-            <div className="bg-[#12141e] p-4 rounded-2xl border border-white/[0.08] mb-6 flex flex-col sm:flex-row items-center justify-between gap-4">
-              <div className="flex items-center gap-3 w-full sm:w-auto">
-                <span className="text-[11px] font-bold text-neutral-400 uppercase tracking-wider">Kategori:</span>
+            <div className="p-3 rounded-xl mb-6 flex flex-col sm:flex-row items-center justify-between gap-3" style={{ background: 'var(--card)', border: '1px solid var(--border)' }}>
+              <div className="flex items-center gap-2 w-full sm:w-auto text-xs">
+                <span style={{ color: 'var(--muted)' }}>Kategori:</span>
                 <select
                   value={categoryFilter}
                   onChange={(e) => setCategoryFilter(e.target.value)}
-                  className="px-3.5 py-2 bg-white/[0.06] border border-white/[0.1] rounded-xl text-xs font-bold text-white focus:outline-none focus:border-amber-400"
+                  className="px-3 py-1.5 rounded-lg border text-xs focus:outline-none"
+                  style={{ background: 'var(--bg)', borderColor: 'var(--border)', color: 'var(--text)' }}
                 >
-                  <option value="all" className="bg-[#12141e]">Tüm Kategoriler ({data.products.length})</option>
+                  <option value="all">Tümü ({data.products.length})</option>
                   {data.categories.map((c) => (
-                    <option key={c.id} value={c.slug} className="bg-[#12141e]">
+                    <option key={c.id} value={c.slug}>
                       {c.name} ({data.products.filter((p) => p.category === c.slug).length})
                     </option>
                   ))}
                 </select>
               </div>
 
-              <div className="w-full sm:w-80">
+              <div className="w-full sm:w-64">
                 <input
                   type="text"
                   value={adminSearch}
                   onChange={(e) => setAdminSearch(e.target.value)}
-                  placeholder="Ürün adı veya model ara..."
-                  className="w-full px-4 py-2 bg-white/[0.06] border border-white/[0.1] rounded-full text-xs text-white placeholder-neutral-500 focus:outline-none focus:border-amber-400"
+                  placeholder="Ürün ara..."
+                  className="w-full px-3 py-1.5 rounded-full border text-xs focus:outline-none"
+                  style={{ background: 'var(--bg)', borderColor: 'var(--border)', color: 'var(--text)' }}
                 />
               </div>
             </div>
 
             {/* Products Table */}
             {adminFilteredProducts.length === 0 ? (
-              <div className="text-center py-16 bg-[#12141e] rounded-3xl border border-white/[0.08] p-8">
-                <span className="text-4xl block mb-3">📦</span>
-                <h3 className="text-base font-bold text-white">Bu Kriterde Ürün Bulunamadı</h3>
-                <p className="text-xs text-neutral-400 mt-1 mb-4">
-                  Yeni bir ürün ekleyebilir veya filtreyi değiştirebilirsiniz.
+              <div className="text-center py-16 rounded-xl p-6" style={{ background: 'var(--card)', border: '1px solid var(--border)' }}>
+                <p className="text-3xl mb-2">📦</p>
+                <h3 className="text-sm font-medium" style={{ color: 'var(--text)' }}>Ürün Bulunamadı</h3>
+                <p className="text-xs mt-1 mb-4" style={{ color: 'var(--muted)' }}>
+                  Arama kriterini değiştirebilir veya yeni ürün ekleyebilirsiniz.
                 </p>
                 <button
                   onClick={handleOpenAddModal}
-                  className="px-5 py-2.5 bg-amber-400 text-black text-xs font-black rounded-full"
+                  className="px-4 py-1.5 rounded-full text-xs font-medium text-white"
+                  style={{ background: 'var(--accent)' }}
                 >
                   Yeni Ürün Ekle
                 </button>
               </div>
             ) : (
-              <div className="bg-[#12141e] rounded-3xl border border-white/[0.08] overflow-hidden shadow-2xl">
+              <div className="rounded-xl overflow-hidden shadow-sm" style={{ background: 'var(--card)', border: '1px solid var(--border)' }}>
                 <div className="overflow-x-auto">
-                  <table className="w-full text-left border-collapse">
+                  <table className="w-full text-left border-collapse text-xs">
                     <thead>
-                      <tr className="bg-white/[0.03] border-b border-white/[0.08] text-[10px] font-mono font-bold uppercase tracking-widest text-neutral-400">
-                        <th className="py-4 px-5">Görsel</th>
-                        <th className="py-4 px-5">Model & Kategori</th>
-                        <th className="py-4 px-5">Fiyat</th>
-                        <th className="py-4 px-5">Renk Seçenekleri</th>
-                        <th className="py-4 px-5">Rozet</th>
-                        <th className="py-4 px-5 text-right">İşlemler</th>
+                      <tr className="border-b" style={{ borderColor: 'var(--border)', color: 'var(--muted)' }}>
+                        <th className="py-3 px-4 font-medium">Görsel</th>
+                        <th className="py-3 px-4 font-medium">Ürün & Kategori</th>
+                        <th className="py-3 px-4 font-medium">Fiyat</th>
+                        <th className="py-3 px-4 font-medium">Renkler</th>
+                        <th className="py-3 px-4 text-right font-medium">İşlemler</th>
                       </tr>
                     </thead>
-                    <tbody className="divide-y divide-white/[0.04] text-xs">
+                    <tbody className="divide-y" style={{ borderColor: 'var(--border)' }}>
                       {adminFilteredProducts.map((prod) => (
-                        <tr key={prod.id} className="hover:bg-white/[0.02] transition">
+                        <tr key={prod.id} className="transition hover:opacity-90" style={{ background: 'var(--card)' }}>
                           {/* Image */}
-                          <td className="py-3 px-5 w-16">
-                            <div className="w-12 h-12 rounded-xl bg-black/40 overflow-hidden border border-white/[0.1] flex-shrink-0">
+                          <td className="py-2.5 px-4 w-14">
+                            <div className="w-10 h-10 rounded-lg overflow-hidden border flex items-center justify-center flex-shrink-0" style={{ background: '#f0ece6', borderColor: 'var(--border)' }}>
                               {prod.image ? (
                                 <img
                                   src={prod.image}
@@ -606,81 +621,70 @@ export default function AdminPage() {
                                   className="w-full h-full object-cover"
                                 />
                               ) : (
-                                <div className="w-full h-full flex items-center justify-center text-[10px] text-neutral-500">
-                                  Yok
-                                </div>
+                                <span className="text-[10px]" style={{ color: 'var(--muted)' }}>Yok</span>
                               )}
                             </div>
                           </td>
 
                           {/* Name & Category */}
-                          <td className="py-3 px-5">
-                            <div className="font-bold text-white text-sm">{prod.name}</div>
-                            <div className="text-[10px] font-mono font-semibold text-neutral-400 uppercase mt-0.5">
+                          <td className="py-2.5 px-4">
+                            <div className="font-medium" style={{ color: 'var(--text)' }}>{prod.name}</div>
+                            <div className="text-[10px] uppercase tracking-wide mt-0.5" style={{ color: 'var(--muted)' }}>
                               {prod.category}
                             </div>
                           </td>
 
                           {/* Price */}
-                          <td className="py-3 px-5">
-                            <span className="font-black text-amber-300 text-sm">
+                          <td className="py-2.5 px-4">
+                            <span className="font-semibold" style={{ color: 'var(--text)' }}>
                               {formatPrice(prod.price)}
                             </span>
                             {prod.oldPrice && (
-                              <span className="block text-[10px] text-neutral-500 line-through">
+                              <span className="block text-[10px] line-through" style={{ color: 'var(--muted)' }}>
                                 {formatPrice(prod.oldPrice)}
                               </span>
                             )}
                           </td>
 
                           {/* Colors */}
-                          <td className="py-3 px-5">
+                          <td className="py-2.5 px-4">
                             {prod.colors && prod.colors.length > 0 ? (
-                              <div className="flex items-center gap-1.5 flex-wrap max-w-xs">
+                              <div className="flex items-center gap-1 flex-wrap max-w-xs">
                                 {prod.colors.map((c, i) => (
                                   <span
                                     key={i}
                                     title={c.name}
-                                    className="w-4 h-4 rounded-full border border-black/30 inline-block shadow-sm"
-                                    style={{ backgroundColor: c.hex }}
+                                    className="w-3.5 h-3.5 rounded-full border inline-block"
+                                    style={{ backgroundColor: c.hex, borderColor: 'rgba(0,0,0,0.15)' }}
                                   />
                                 ))}
-                                <span className="text-[10px] text-neutral-400 font-medium ml-1">
-                                  ({prod.colors.length} renk)
+                                <span className="text-[10px] ml-1" style={{ color: 'var(--muted)' }}>
+                                  ({prod.colors.length})
                                 </span>
                               </div>
                             ) : (
-                              <span className="text-neutral-500">-</span>
-                            )}
-                          </td>
-
-                          {/* Badge */}
-                          <td className="py-3 px-5">
-                            {prod.badge ? (
-                              <span className="inline-block px-2.5 py-0.5 text-[9px] font-black rounded-full bg-amber-400/10 text-amber-300 border border-amber-400/20 uppercase">
-                                {prod.badge}
-                              </span>
-                            ) : (
-                              <span className="text-neutral-500">-</span>
+                              <span style={{ color: 'var(--muted)' }}>-</span>
                             )}
                           </td>
 
                           {/* Actions */}
-                          <td className="py-3 px-5 text-right">
-                            <div className="flex items-center justify-end gap-2">
+                          <td className="py-2.5 px-4 text-right">
+                            <div className="flex items-center justify-end gap-1.5">
                               <button
                                 onClick={() => handleOpenEditModal(prod)}
-                                className="p-2 rounded-xl bg-white/[0.05] hover:bg-white/[0.1] text-neutral-300 transition"
+                                className="p-1.5 rounded-lg border transition hover:opacity-70"
+                                style={{ borderColor: 'var(--border)', color: 'var(--text)' }}
                                 title="Düzenle"
                               >
-                                <Edit3 className="w-4 h-4" />
+                                <Edit3 className="w-3.5 h-3.5" />
                               </button>
                               <button
                                 onClick={() => handleDeleteProduct(prod.id, prod.name)}
-                                className="p-2 rounded-xl bg-rose-950/40 hover:bg-rose-900/60 text-rose-400 border border-rose-500/20 transition"
+                                className="p-1.5 rounded-lg border transition hover:opacity-70 text-red-600"
+                                style={{ borderColor: 'var(--border)' }}
                                 title="Sil"
                               >
-                                <Trash2 className="w-4 h-4" />
+                                <Trash2 className="w-3.5 h-3.5" />
                               </button>
                             </div>
                           </td>
@@ -694,91 +698,81 @@ export default function AdminPage() {
           </div>
         ) : (
           /* SETTINGS TAB */
-          <div className="max-w-2xl bg-[#12141e] rounded-3xl border border-white/[0.08] p-6 sm:p-8 shadow-2xl">
-            <h2 className="text-xl font-black text-white mb-1">Site & WhatsApp Danışma Ayarları</h2>
-            <p className="text-xs text-neutral-400 mb-6">
-              Müşterilerinizin göreceği başlıkları ve WhatsApp sipariş numarasını buradan yönetin.
+          <div className="max-w-xl rounded-xl p-6 shadow-sm" style={{ background: 'var(--card)', border: '1px solid var(--border)' }}>
+            <h2 className="text-base font-medium mb-1" style={{ color: 'var(--text)' }}>Site & İletişim Ayarları</h2>
+            <p className="text-xs mb-6" style={{ color: 'var(--muted)' }}>
+              Başlık ve WhatsApp sipariş numarasını buradan güncelleyebilirsiniz.
             </p>
 
-            <form onSubmit={handleSaveSettings} className="space-y-5">
+            <form onSubmit={handleSaveSettings} className="space-y-4 text-xs">
               <div>
-                <label className="block text-xs font-bold uppercase tracking-wider text-neutral-300 mb-1.5">
-                  Site Başlığı
+                <label className="block font-medium mb-1" style={{ color: 'var(--text)' }}>
+                  Site Adı
                 </label>
                 <input
                   type="text"
                   value={settingsForm.siteName}
                   onChange={(e) => setSettingsForm({ ...settingsForm, siteName: e.target.value })}
-                  className="w-full px-4 py-2.5 bg-white/[0.05] border border-white/[0.1] rounded-xl text-sm font-semibold text-white focus:outline-none focus:border-amber-400"
+                  className="w-full px-3 py-2 rounded-lg border focus:outline-none"
+                  style={{ background: 'var(--bg)', borderColor: 'var(--border)', color: 'var(--text)' }}
                 />
               </div>
 
               <div>
-                <label className="block text-xs font-bold uppercase tracking-wider text-neutral-300 mb-1.5">
-                  Alt Başlık / Slogan
+                <label className="block font-medium mb-1" style={{ color: 'var(--text)' }}>
+                  Alt Başlık
                 </label>
                 <input
                   type="text"
                   value={settingsForm.siteSubtitle}
                   onChange={(e) => setSettingsForm({ ...settingsForm, siteSubtitle: e.target.value })}
-                  className="w-full px-4 py-2.5 bg-white/[0.05] border border-white/[0.1] rounded-xl text-sm font-semibold text-white focus:outline-none focus:border-amber-400"
+                  className="w-full px-3 py-2 rounded-lg border focus:outline-none"
+                  style={{ background: 'var(--bg)', borderColor: 'var(--border)', color: 'var(--text)' }}
                 />
               </div>
 
               <div>
-                <label className="block text-xs font-bold uppercase tracking-wider text-neutral-300 mb-1.5">
-                  WhatsApp Danışma Numarası
+                <label className="block font-medium mb-1" style={{ color: 'var(--text)' }}>
+                  WhatsApp Numarası
                 </label>
                 <div className="relative">
-                  <Phone className="w-4 h-4 text-neutral-400 absolute left-3.5 top-1/2 -translate-y-1/2" />
+                  <Phone className="w-3.5 h-3.5 absolute left-3 top-1/2 -translate-y-1/2" style={{ color: 'var(--muted)' }} />
                   <input
                     type="text"
                     value={settingsForm.whatsappNumber}
                     onChange={(e) => setSettingsForm({ ...settingsForm, whatsappNumber: e.target.value })}
-                    placeholder="905xxxxxxxxx (Ülke kodu ile)"
-                    className="w-full pl-10 pr-4 py-2.5 bg-white/[0.05] border border-white/[0.1] rounded-xl text-sm font-semibold text-white focus:outline-none focus:border-amber-400"
+                    placeholder="905xxxxxxxxx"
+                    className="w-full pl-9 pr-3 py-2 rounded-lg border focus:outline-none"
+                    style={{ background: 'var(--bg)', borderColor: 'var(--border)', color: 'var(--text)' }}
                   />
                 </div>
-                <p className="text-[11px] text-neutral-400 mt-1">
-                  Müşteriler ürün detayından "WhatsApp ile Sipariş & Bilgi Al" butonuna bastıklarında bu numaraya ürün adı, seçilen renk ve fiyatla mesaj iletilir.
-                </p>
               </div>
 
               <div>
-                <label className="block text-xs font-bold uppercase tracking-wider text-neutral-300 mb-1.5">
-                  Üst Duyuru Bandı Metni
-                </label>
-                <input
-                  type="text"
-                  value={settingsForm.announcementText}
-                  onChange={(e) => setSettingsForm({ ...settingsForm, announcementText: e.target.value })}
-                  className="w-full px-4 py-2.5 bg-white/[0.05] border border-white/[0.1] rounded-xl text-sm font-semibold text-white focus:outline-none focus:border-amber-400"
-                />
-              </div>
-
-              <div>
-                <label className="block text-xs font-bold uppercase tracking-wider text-neutral-300 mb-1.5">
-                  Yönetim Paneli Şifresi (PIN)
+                <label className="block font-medium mb-1" style={{ color: 'var(--text)' }}>
+                  Yönetici PIN Şifresi
                 </label>
                 <input
                   type="text"
                   value={settingsForm.adminPin}
                   onChange={(e) => setSettingsForm({ ...settingsForm, adminPin: e.target.value })}
-                  className="w-full px-4 py-2.5 bg-white/[0.05] border border-white/[0.1] rounded-xl text-sm font-semibold text-white focus:outline-none focus:border-amber-400"
+                  className="w-full px-3 py-2 rounded-lg border focus:outline-none"
+                  style={{ background: 'var(--bg)', borderColor: 'var(--border)', color: 'var(--text)' }}
                 />
               </div>
 
-              <div className="pt-4 border-t border-white/[0.08] flex items-center justify-between">
+              <div className="pt-4 flex items-center justify-between" style={{ borderTop: '1px solid var(--border)' }}>
                 <button
                   type="submit"
-                  className="px-6 py-3 bg-gradient-to-r from-amber-400 to-amber-500 hover:from-amber-300 hover:to-amber-400 text-black font-black rounded-xl text-xs shadow-md transition"
+                  className="px-5 py-2 rounded-full text-xs font-medium text-white transition hover:opacity-90 shadow-sm"
+                  style={{ background: 'var(--accent)' }}
                 >
                   Ayarları Kaydet
                 </button>
 
-                <label className="inline-flex items-center gap-2 px-4 py-2.5 bg-white/[0.05] hover:bg-white/[0.1] border border-white/[0.08] text-neutral-300 text-xs font-bold rounded-xl cursor-pointer transition">
+                <label className="inline-flex items-center gap-1.5 px-3 py-2 rounded-full border text-xs cursor-pointer transition hover:opacity-70" style={{ borderColor: 'var(--border)', color: 'var(--muted)' }}>
                   <FileUp className="w-3.5 h-3.5" />
-                  <span>Yedek JSON Yükle</span>
+                  <span>Yedek Yükle</span>
                   <input
                     type="file"
                     accept=".json"
@@ -796,31 +790,35 @@ export default function AdminPage() {
       {isModalOpen && (
         <div className="fixed inset-0 z-50 overflow-y-auto">
           <div
-            className="fixed inset-0 bg-black/85 backdrop-blur-2xl"
+            className="fixed inset-0 bg-black/40 backdrop-blur-sm"
             onClick={() => setIsModalOpen(false)}
           />
 
-          <div className="flex min-h-full items-center justify-center p-3 sm:p-6 text-center">
-            <div className="relative transform overflow-hidden rounded-[32px] bg-[#12141e] border border-white/[0.12] text-left shadow-2xl transition-all w-full max-w-2xl my-8 p-6 sm:p-8">
-              {/* Close Button */}
+          <div className="flex min-h-full items-center justify-center p-4">
+            <div
+              className="relative transform overflow-hidden rounded-2xl text-left shadow-2xl w-full max-w-xl my-8 p-6"
+              style={{ background: 'var(--card)', border: '1px solid var(--border)' }}
+            >
+              {/* Close */}
               <button
                 onClick={() => setIsModalOpen(false)}
-                className="absolute right-5 top-5 p-2 rounded-full bg-white/[0.08] hover:bg-white/[0.15] text-neutral-300 transition"
+                className="absolute right-4 top-4 p-1.5 rounded-full transition hover:opacity-70"
+                style={{ color: 'var(--muted)' }}
               >
-                <X className="w-5 h-5" />
+                <X className="w-4 h-4" />
               </button>
 
-              <h2 className="text-xl font-black text-white mb-1">
+              <h2 className="text-base font-medium mb-1" style={{ color: 'var(--text)' }}>
                 {editingProduct ? 'Ürünü Düzenle' : 'Yeni Ürün Ekle'}
               </h2>
-              <p className="text-xs text-neutral-400 mb-6">
-                Ürün adı, kategorisi, fiyatı, görseli ve renk seçeneklerini belirleyin.
+              <p className="text-xs mb-5" style={{ color: 'var(--muted)' }}>
+                Ürün bilgilerini ve renk seçeneklerini belirleyin.
               </p>
 
-              <form onSubmit={handleSaveProduct} className="space-y-5">
+              <form onSubmit={handleSaveProduct} className="space-y-4 text-xs">
                 {/* Product Name */}
                 <div>
-                  <label className="block text-xs font-bold uppercase tracking-wider text-neutral-300 mb-1.5">
+                  <label className="block font-medium mb-1" style={{ color: 'var(--text)' }}>
                     Ürün Adı *
                   </label>
                   <input
@@ -828,24 +826,26 @@ export default function AdminPage() {
                     required
                     value={formData.name}
                     onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                    placeholder="Örn: Titanium AMOLED Akıllı Saat"
-                    className="w-full px-4 py-2.5 bg-white/[0.05] border border-white/[0.1] rounded-xl text-sm font-semibold text-white focus:outline-none focus:border-amber-400"
+                    placeholder="Örn: Titanyum Akıllı Saat"
+                    className="w-full px-3 py-2 rounded-lg border focus:outline-none"
+                    style={{ background: 'var(--bg)', borderColor: 'var(--border)', color: 'var(--text)' }}
                   />
                 </div>
 
                 {/* Category & Badge */}
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div className="grid grid-cols-2 gap-3">
                   <div>
-                    <label className="block text-xs font-bold uppercase tracking-wider text-neutral-300 mb-1.5">
+                    <label className="block font-medium mb-1" style={{ color: 'var(--text)' }}>
                       Kategori *
                     </label>
                     <select
                       value={formData.category}
                       onChange={(e) => setFormData({ ...formData, category: e.target.value })}
-                      className="w-full px-4 py-2.5 bg-white/[0.05] border border-white/[0.1] rounded-xl text-sm font-semibold text-white focus:outline-none focus:border-amber-400"
+                      className="w-full px-3 py-2 rounded-lg border focus:outline-none"
+                      style={{ background: 'var(--bg)', borderColor: 'var(--border)', color: 'var(--text)' }}
                     >
                       {data.categories.map((c) => (
-                        <option key={c.id} value={c.slug} className="bg-[#12141e]">
+                        <option key={c.id} value={c.slug}>
                           {c.name}
                         </option>
                       ))}
@@ -853,24 +853,25 @@ export default function AdminPage() {
                   </div>
 
                   <div>
-                    <label className="block text-xs font-bold uppercase tracking-wider text-neutral-300 mb-1.5">
+                    <label className="block font-medium mb-1" style={{ color: 'var(--text)' }}>
                       Rozet (Opsiyonel)
                     </label>
                     <input
                       type="text"
                       value={formData.badge}
                       onChange={(e) => setFormData({ ...formData, badge: e.target.value })}
-                      placeholder="Örn: Yeni, Çok Satan, Fırsat"
-                      className="w-full px-4 py-2.5 bg-white/[0.05] border border-white/[0.1] rounded-xl text-sm font-semibold text-white focus:outline-none focus:border-amber-400"
+                      placeholder="Örn: Yeni, Özel"
+                      className="w-full px-3 py-2 rounded-lg border focus:outline-none"
+                      style={{ background: 'var(--bg)', borderColor: 'var(--border)', color: 'var(--text)' }}
                     />
                   </div>
                 </div>
 
                 {/* Price & Old Price */}
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div className="grid grid-cols-2 gap-3">
                   <div>
-                    <label className="block text-xs font-bold uppercase tracking-wider text-neutral-300 mb-1.5">
-                      Satış Fiyatı (₺) *
+                    <label className="block font-medium mb-1" style={{ color: 'var(--text)' }}>
+                      Fiyat (₺) *
                     </label>
                     <input
                       type="number"
@@ -880,12 +881,13 @@ export default function AdminPage() {
                       value={formData.price}
                       onChange={(e) => setFormData({ ...formData, price: e.target.value })}
                       placeholder="Örn: 2450"
-                      className="w-full px-4 py-2.5 bg-white/[0.05] border border-white/[0.1] rounded-xl text-sm font-semibold text-white focus:outline-none focus:border-amber-400"
+                      className="w-full px-3 py-2 rounded-lg border focus:outline-none"
+                      style={{ background: 'var(--bg)', borderColor: 'var(--border)', color: 'var(--text)' }}
                     />
                   </div>
 
                   <div>
-                    <label className="block text-xs font-bold uppercase tracking-wider text-neutral-300 mb-1.5">
+                    <label className="block font-medium mb-1" style={{ color: 'var(--text)' }}>
                       Eski Fiyat (İndirim Gösterimi)
                     </label>
                     <input
@@ -895,21 +897,22 @@ export default function AdminPage() {
                       value={formData.oldPrice}
                       onChange={(e) => setFormData({ ...formData, oldPrice: e.target.value })}
                       placeholder="Örn: 2950"
-                      className="w-full px-4 py-2.5 bg-white/[0.05] border border-white/[0.1] rounded-xl text-sm font-semibold text-white focus:outline-none focus:border-amber-400"
+                      className="w-full px-3 py-2 rounded-lg border focus:outline-none"
+                      style={{ background: 'var(--bg)', borderColor: 'var(--border)', color: 'var(--text)' }}
                     />
                   </div>
                 </div>
 
-                {/* Product Image Section */}
-                <div className="p-4 bg-white/[0.03] rounded-2xl border border-white/[0.08] space-y-3">
-                  <label className="block text-xs font-bold uppercase tracking-wider text-neutral-300">
+                {/* Image Section */}
+                <div className="p-3 rounded-lg border space-y-2" style={{ background: 'var(--bg)', borderColor: 'var(--border)' }}>
+                  <label className="block font-medium" style={{ color: 'var(--text)' }}>
                     Ürün Görseli
                   </label>
 
-                  <div className="flex flex-col sm:flex-row items-center gap-3">
-                    <label className="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-4 py-2.5 bg-white/[0.08] hover:bg-white/[0.15] text-white text-xs font-bold rounded-xl cursor-pointer transition border border-white/[0.1]">
+                  <div className="flex items-center gap-2">
+                    <label className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg border text-xs cursor-pointer transition hover:opacity-70" style={{ background: 'var(--card)', borderColor: 'var(--border)', color: 'var(--text)' }}>
                       <Upload className="w-3.5 h-3.5" />
-                      <span>{imageUploadLoading ? 'Yükleniyor...' : 'Bilgisayardan Resim Seç'}</span>
+                      <span>{imageUploadLoading ? 'Yükleniyor...' : 'Bilgisayardan Seç'}</span>
                       <input
                         type="file"
                         accept="image/*"
@@ -919,63 +922,63 @@ export default function AdminPage() {
                       />
                     </label>
 
-                    <span className="text-xs text-neutral-500 font-medium">veya URL yapıştırın:</span>
-
                     <input
                       type="url"
                       value={formData.image}
                       onChange={(e) => setFormData({ ...formData, image: e.target.value })}
-                      placeholder="https://... (Resim bağlantısı)"
-                      className="w-full sm:flex-1 px-3 py-2 bg-white/[0.05] border border-white/[0.1] rounded-xl text-xs text-white focus:outline-none focus:border-amber-400"
+                      placeholder="veya resim bağlantısı yapıştırın"
+                      className="flex-1 px-3 py-1.5 rounded-lg border focus:outline-none"
+                      style={{ background: 'var(--card)', borderColor: 'var(--border)', color: 'var(--text)' }}
                     />
                   </div>
 
-                  {/* Image Preview */}
                   {formData.image && (
-                    <div className="flex items-center gap-3 pt-2">
-                      <div className="w-16 h-16 rounded-xl bg-black/40 overflow-hidden border border-white/[0.15] flex-shrink-0">
+                    <div className="flex items-center gap-2 pt-1">
+                      <div className="w-10 h-10 rounded overflow-hidden border flex-shrink-0" style={{ borderColor: 'var(--border)' }}>
                         <img
                           src={formData.image}
                           alt="Önizleme"
                           className="w-full h-full object-cover"
                         />
                       </div>
-                      <span className="text-xs text-emerald-400 font-semibold flex items-center gap-1">
-                        <Check className="w-3.5 h-3.5" />
-                        Görsel başarıyla seçildi
+                      <span className="text-[11px] text-emerald-600 flex items-center gap-1 font-medium">
+                        <Check className="w-3 h-3" />
+                        Görsel seçildi
                       </span>
                     </div>
                   )}
                 </div>
 
-                {/* Color Options Section */}
-                <div className="p-4 bg-white/[0.03] rounded-2xl border border-white/[0.08] space-y-3">
+                {/* Color Section */}
+                <div className="p-3 rounded-lg border space-y-2.5" style={{ background: 'var(--bg)', borderColor: 'var(--border)' }}>
                   <div className="flex items-center justify-between">
-                    <label className="block text-xs font-bold uppercase tracking-wider text-neutral-300">
+                    <label className="block font-medium" style={{ color: 'var(--text)' }}>
                       Renk Seçenekleri
                     </label>
-                    <span className="text-[11px] text-neutral-400 font-mono">
-                      {formData.colors.length} renk eklendi
+                    <span className="text-[11px]" style={{ color: 'var(--muted)' }}>
+                      {formData.colors.length} renk
                     </span>
                   </div>
 
-                  {/* Currently Added Colors */}
+                  {/* Added colors */}
                   {formData.colors.length > 0 && (
-                    <div className="flex flex-wrap gap-2 pt-1 pb-2">
+                    <div className="flex flex-wrap gap-1.5">
                       {formData.colors.map((c, idx) => (
                         <div
                           key={idx}
-                          className="flex items-center gap-2 bg-white/[0.06] px-3 py-1.5 rounded-full border border-white/[0.1] text-xs font-semibold text-white"
+                          className="flex items-center gap-1.5 px-2.5 py-1 rounded-full border text-[11px]"
+                          style={{ background: 'var(--card)', borderColor: 'var(--border)', color: 'var(--text)' }}
                         >
                           <span
-                            className="w-3.5 h-3.5 rounded-full border border-black/20 inline-block"
-                            style={{ backgroundColor: c.hex }}
+                            className="w-3 h-3 rounded-full border inline-block"
+                            style={{ backgroundColor: c.hex, borderColor: 'rgba(0,0,0,0.1)' }}
                           />
                           <span>{c.name}</span>
                           <button
                             type="button"
                             onClick={() => handleRemoveColor(idx)}
-                            className="text-neutral-400 hover:text-rose-400 text-xs ml-1"
+                            className="hover:opacity-70 ml-0.5"
+                            style={{ color: 'var(--muted)' }}
                           >
                             ✕
                           </button>
@@ -984,88 +987,90 @@ export default function AdminPage() {
                     </div>
                   )}
 
-                  {/* Preset Fast Colors */}
-                  <div>
-                    <span className="text-[10px] font-bold text-neutral-400 uppercase tracking-wider block mb-1.5">
-                      Hızlı Renk Seçimi:
-                    </span>
-                    <div className="flex flex-wrap gap-1.5">
-                      {PRESET_COLORS.map((color, i) => (
-                        <button
-                          key={i}
-                          type="button"
-                          onClick={() => handleAddPresetColor(color)}
-                          className="inline-flex items-center gap-1.5 px-2.5 py-1 bg-white/[0.04] hover:bg-white/[0.09] border border-white/[0.08] rounded-lg text-xs font-medium text-neutral-300 transition"
-                        >
-                          <span
-                            className="w-3 h-3 rounded-full border border-black/20 inline-block"
-                            style={{ backgroundColor: color.hex }}
-                          />
-                          <span>{color.name}</span>
-                        </button>
-                      ))}
-                    </div>
+                  {/* Presets */}
+                  <div className="flex flex-wrap gap-1">
+                    {PRESET_COLORS.map((color, i) => (
+                      <button
+                        key={i}
+                        type="button"
+                        onClick={() => handleAddPresetColor(color)}
+                        className="inline-flex items-center gap-1 px-2 py-0.5 rounded border text-[11px] transition hover:opacity-70"
+                        style={{ background: 'var(--card)', borderColor: 'var(--border)', color: 'var(--text)' }}
+                      >
+                        <span
+                          className="w-2.5 h-2.5 rounded-full border inline-block"
+                          style={{ backgroundColor: color.hex, borderColor: 'rgba(0,0,0,0.1)' }}
+                        />
+                        <span>{color.name}</span>
+                      </button>
+                    ))}
                   </div>
 
-                  {/* Custom Color Input */}
-                  <div className="flex items-center gap-2 pt-2 border-t border-white/[0.06]">
+                  {/* Custom color */}
+                  <div className="flex items-center gap-1.5 pt-1">
                     <input
                       type="color"
                       value={customColorHex}
                       onChange={(e) => setCustomColorHex(e.target.value)}
-                      className="w-8 h-8 rounded-lg cursor-pointer border border-white/[0.1] p-0.5 bg-black"
+                      className="w-7 h-7 rounded cursor-pointer border p-0.5"
+                      style={{ borderColor: 'var(--border)' }}
                     />
                     <input
                       type="text"
                       value={customColorName}
                       onChange={(e) => setCustomColorName(e.target.value)}
-                      placeholder="Örn: Gece Mavisi, Rose Gold..."
-                      className="flex-1 px-3 py-1.5 bg-white/[0.05] border border-white/[0.1] rounded-xl text-xs text-white focus:outline-none"
+                      placeholder="Özel renk adı..."
+                      className="flex-1 px-2.5 py-1 rounded-lg border focus:outline-none"
+                      style={{ background: 'var(--card)', borderColor: 'var(--border)', color: 'var(--text)' }}
                     />
                     <button
                       type="button"
                       onClick={handleAddCustomColor}
-                      className="px-3.5 py-1.5 bg-amber-400 hover:bg-amber-300 text-black rounded-xl text-xs font-bold transition"
+                      className="px-3 py-1 rounded-lg border text-xs font-medium transition hover:opacity-70"
+                      style={{ background: 'var(--card)', borderColor: 'var(--border)', color: 'var(--text)' }}
                     >
-                      Renk Ekle
+                      Ekle
                     </button>
                   </div>
                 </div>
 
                 {/* Description */}
                 <div>
-                  <label className="block text-xs font-bold uppercase tracking-wider text-neutral-300 mb-1.5">
-                    Ürün Açıklaması
+                  <label className="block font-medium mb-1" style={{ color: 'var(--text)' }}>
+                    Açıklama
                   </label>
                   <textarea
-                    rows={3}
+                    rows={2}
                     value={formData.description}
                     onChange={(e) => setFormData({ ...formData, description: e.target.value })}
-                    placeholder="Ürünün genel açıklaması..."
-                    className="w-full px-4 py-2.5 bg-white/[0.05] border border-white/[0.1] rounded-xl text-sm text-white focus:outline-none focus:border-amber-400"
+                    placeholder="Ürün açıklaması..."
+                    className="w-full px-3 py-2 rounded-lg border focus:outline-none"
+                    style={{ background: 'var(--bg)', borderColor: 'var(--border)', color: 'var(--text)' }}
                   />
                 </div>
 
-                {/* Features (Bullet points) */}
+                {/* Features */}
                 <div>
-                  <label className="block text-xs font-bold uppercase tracking-wider text-neutral-300 mb-1.5">
-                    Öne Çıkan Özellikler (Her satıra bir özellik yazın)
+                  <label className="block font-medium mb-1" style={{ color: 'var(--text)' }}>
+                    Özellikler (Her satıra bir tane)
                   </label>
                   <textarea
-                    rows={3}
+                    rows={2}
                     value={formData.featuresText}
                     onChange={(e) => setFormData({ ...formData, featuresText: e.target.value })}
-                    placeholder="Safir Çizilmez Cam&#10;50m Su Geçirmezlik&#10;Titanyum Kasa"
-                    className="w-full px-4 py-2.5 bg-white/[0.05] border border-white/[0.1] rounded-xl text-sm text-white focus:outline-none focus:border-amber-400 font-mono text-xs"
+                    placeholder="Safir Cam&#10;50m Su Geçirmezlik"
+                    className="w-full px-3 py-2 rounded-lg border focus:outline-none font-mono text-[11px]"
+                    style={{ background: 'var(--bg)', borderColor: 'var(--border)', color: 'var(--text)' }}
                   />
                 </div>
 
                 {/* Actions */}
-                <div className="pt-4 border-t border-white/[0.08] flex items-center justify-end gap-3">
+                <div className="pt-3 flex items-center justify-end gap-2" style={{ borderTop: '1px solid var(--border)' }}>
                   <button
                     type="button"
                     onClick={() => setIsModalOpen(false)}
-                    className="px-5 py-2.5 rounded-xl border border-white/[0.1] text-xs font-bold text-neutral-400 hover:text-white hover:bg-white/[0.05] transition"
+                    className="px-4 py-2 rounded-full border text-xs font-medium transition hover:opacity-70"
+                    style={{ borderColor: 'var(--border)', color: 'var(--muted)' }}
                   >
                     İptal
                   </button>
@@ -1073,10 +1078,11 @@ export default function AdminPage() {
                   <button
                     type="submit"
                     disabled={isSaving}
-                    className="inline-flex items-center gap-2 px-6 py-2.5 bg-gradient-to-r from-amber-400 to-amber-500 hover:from-amber-300 hover:to-amber-400 text-black text-xs font-black rounded-xl shadow-lg transition"
+                    className="inline-flex items-center gap-1.5 px-5 py-2 rounded-full text-xs font-medium text-white transition hover:opacity-90 shadow-sm"
+                    style={{ background: 'var(--accent)' }}
                   >
-                    <Save className="w-4 h-4" />
-                    <span>{isSaving ? 'Kaydediliyor...' : 'Ürünü Kaydet'}</span>
+                    <Save className="w-3.5 h-3.5" />
+                    <span>{isSaving ? 'Kaydediliyor...' : 'Kaydet'}</span>
                   </button>
                 </div>
               </form>
