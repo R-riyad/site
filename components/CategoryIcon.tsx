@@ -11,6 +11,8 @@ import {
   LayoutGrid,
   Tag,
   Package,
+  Layers,
+  ShoppingBag,
 } from 'lucide-react';
 
 interface CategoryIconProps {
@@ -28,6 +30,8 @@ export default function CategoryIcon({ name, className = 'w-5 h-5' }: CategoryIc
     Flame: <Flame className={className} />,
     LayoutGrid: <LayoutGrid className={className} />,
     Tag: <Tag className={className} />,
+    Layers: <Layers className={className} />,
+    ShoppingBag: <ShoppingBag className={className} />,
   };
 
   return iconMap[name] || <Package className={className} />;

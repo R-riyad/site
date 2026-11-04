@@ -19,3 +19,4 @@ echo Vercel yaklaşık 30-45 saniye içinde sitenizi otomatik güncelleyecektir.
 echo ========================================================
 echo.
 pause
+

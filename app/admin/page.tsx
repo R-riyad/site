@@ -26,6 +26,7 @@ import {
   Settings,
   AlertCircle,
   Eye,
+  Sparkles,
 } from 'lucide-react';
 
 const PRESET_COLORS = [
@@ -201,7 +202,7 @@ export default function AdminPage() {
       } else {
         alert(result.error || 'Görsel yüklenemedi');
       }
-    } catch (err) {
+    } catch {
       alert('Görsel yüklenirken bağlantı hatası oluştu');
     } finally {
       setImageUploadLoading(false);
@@ -252,7 +253,6 @@ export default function AdminPage() {
       const resData = await res.json();
 
       if (res.ok) {
-        // Update local state
         setData((prev) => {
           const exists = prev.products.some((p) => p.id === productPayload.id);
           const updated = exists
@@ -266,7 +266,7 @@ export default function AdminPage() {
       } else {
         alert(resData.error || 'Ürün kaydedilemedi.');
       }
-    } catch (err) {
+    } catch {
       alert('Sunucu ile bağlantı kurulamadı.');
     } finally {
       setIsSaving(false);
@@ -292,7 +292,7 @@ export default function AdminPage() {
       } else {
         alert('Ürün silinirken hata oluştu.');
       }
-    } catch (err) {
+    } catch {
       alert('Bağlantı hatası');
     }
   };
@@ -315,7 +315,7 @@ export default function AdminPage() {
       } else {
         alert('Ayarlar kaydedilemedi.');
       }
-    } catch (err) {
+    } catch {
       alert('Bağlantı hatası');
     }
   };
@@ -353,9 +353,9 @@ export default function AdminPage() {
             showToast('Tüm ürünler ve ayarlar JSON dosyasından başarıyla yüklendi!');
           }
         } else {
-          alert('Geçersiz JSON formatı. "products" alanı bulunamadı.');
+          alert('Geçersiz JSON formatı.');
         }
-      } catch (err) {
+      } catch {
         alert('JSON dosyası okunamadı veya bozuk.');
       }
     };
@@ -382,15 +382,15 @@ export default function AdminPage() {
   // Login Screen
   if (!isAuthenticated) {
     return (
-      <div className="min-h-screen bg-neutral-900 flex items-center justify-center p-4">
-        <div className="bg-white rounded-3xl p-8 max-w-md w-full shadow-2xl border border-neutral-100 text-center">
-          <div className="w-14 h-14 bg-neutral-900 text-white rounded-2xl flex items-center justify-center mx-auto mb-5 shadow-lg shadow-neutral-900/20">
-            <Lock className="w-6 h-6 text-amber-400" />
+      <div className="min-h-screen bg-[#090a0f] flex items-center justify-center p-4">
+        <div className="bg-[#12141e] border border-white/[0.1] rounded-3xl p-8 max-w-md w-full shadow-2xl text-center">
+          <div className="w-14 h-14 bg-gradient-to-br from-amber-400 to-amber-600 text-black rounded-2xl flex items-center justify-center mx-auto mb-5 shadow-lg shadow-amber-500/10">
+            <Lock className="w-6 h-6 text-black" />
           </div>
 
-          <h1 className="text-2xl font-black text-neutral-900 mb-1">Yönetim Paneli</h1>
-          <p className="text-xs text-neutral-500 mb-6">
-            Ürünleri ve fiyatları düzenlemek için yönetim şifresini giriniz.
+          <h1 className="text-2xl font-black text-white mb-1">Yönetim Paneli</h1>
+          <p className="text-xs text-neutral-400 mb-6">
+            Ürünleri, fiyatları ve renk seçeneklerini yönetmek için PIN giriniz.
           </p>
 
           <form onSubmit={handleLogin} className="space-y-4">
@@ -404,10 +404,10 @@ export default function AdminPage() {
                 }}
                 placeholder="Yönetim Şifresi (Varsayılan: 1234)"
                 autoFocus
-                className="w-full text-center px-4 py-3 bg-neutral-100 border border-neutral-200 rounded-2xl text-neutral-900 font-semibold focus:outline-none focus:ring-2 focus:ring-neutral-900 transition"
+                className="w-full text-center px-4 py-3 bg-white/[0.05] border border-white/[0.1] rounded-2xl text-white font-semibold focus:outline-none focus:border-amber-400 focus:ring-2 focus:ring-amber-400/20 transition"
               />
               {pinError && (
-                <p className="text-xs text-rose-600 font-semibold mt-2 flex items-center justify-center gap-1">
+                <p className="text-xs text-rose-400 font-semibold mt-2 flex items-center justify-center gap-1">
                   <AlertCircle className="w-3.5 h-3.5" />
                   Hatalı şifre. (Varsayılan şifre: 1234)
                 </p>
@@ -416,19 +416,19 @@ export default function AdminPage() {
 
             <button
               type="submit"
-              className="w-full py-3.5 bg-neutral-900 hover:bg-neutral-800 text-white font-bold rounded-2xl shadow-lg transition"
+              className="w-full py-3.5 bg-gradient-to-r from-amber-400 to-amber-500 hover:from-amber-300 hover:to-amber-400 text-black font-black rounded-2xl shadow-lg transition"
             >
               Panele Giriş Yap
             </button>
           </form>
 
-          <div className="mt-6 pt-6 border-t border-neutral-100">
+          <div className="mt-6 pt-6 border-t border-white/[0.08]">
             <Link
               href="/"
-              className="inline-flex items-center gap-2 text-xs font-semibold text-neutral-500 hover:text-neutral-900 transition"
+              className="inline-flex items-center gap-2 text-xs font-semibold text-neutral-400 hover:text-white transition"
             >
               <ArrowLeft className="w-3.5 h-3.5" />
-              <span>Ana Sayfaya / Vitrine Dön</span>
+              <span>Ana Sayfaya / Canlı Vitrine Dön</span>
             </Link>
           </div>
         </div>
@@ -437,36 +437,36 @@ export default function AdminPage() {
   }
 
   return (
-    <div className="min-h-screen bg-neutral-50 text-neutral-900 font-sans pb-20">
+    <div className="min-h-screen bg-[#090a0f] text-neutral-100 font-sans pb-24">
       {/* Toast Notification */}
       {statusMessage && (
-        <div className="fixed bottom-6 right-6 z-50 bg-neutral-900 text-white px-5 py-3 rounded-2xl shadow-2xl flex items-center gap-3 text-sm font-semibold border border-neutral-700 animate-bounce">
+        <div className="fixed bottom-6 right-6 z-50 bg-[#151824] text-white px-5 py-3 rounded-2xl shadow-2xl flex items-center gap-3 text-xs font-bold border border-white/[0.15] animate-bounce">
           <Check className="w-4 h-4 text-emerald-400" />
           <span>{statusMessage}</span>
         </div>
       )}
 
       {/* Admin Header */}
-      <header className="bg-white border-b border-neutral-200 sticky top-0 z-30 shadow-sm">
+      <header className="bg-[#0e1018] border-b border-white/[0.08] sticky top-0 z-30 backdrop-blur-xl">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex items-center justify-between h-20 gap-4">
             <div className="flex items-center gap-4">
               <Link
                 href="/"
-                className="p-2.5 rounded-xl bg-neutral-100 hover:bg-neutral-200 text-neutral-700 transition"
+                className="p-2.5 rounded-xl bg-white/[0.05] hover:bg-white/[0.1] text-neutral-300 transition border border-white/[0.08]"
                 title="Vitrine Dön"
               >
                 <ArrowLeft className="w-4 h-4" />
               </Link>
               <div>
-                <h1 className="text-xl font-black text-neutral-900 flex items-center gap-2">
-                  <span>Ürün Yönetim Paneli</span>
-                  <span className="text-[11px] font-bold px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-800">
-                    Aktif
+                <h1 className="text-xl font-black text-white flex items-center gap-2.5">
+                  <span>Ürün & Fiyat Yönetim Paneli</span>
+                  <span className="text-[10px] font-mono font-bold px-2 py-0.5 rounded-full bg-emerald-950 text-emerald-400 border border-emerald-500/20">
+                    CANLI
                   </span>
                 </h1>
-                <p className="text-xs text-neutral-500">
-                  Bilgisayarınızdan ürün, görsel, fiyat ve renk yönetimi
+                <p className="text-xs text-neutral-400">
+                  Bilgisayarınızdan anlık ürün, görsel, fiyat ve renk kontrolü
                 </p>
               </div>
             </div>
@@ -476,24 +476,24 @@ export default function AdminPage() {
               <Link
                 href="/"
                 target="_blank"
-                className="hidden sm:inline-flex items-center gap-2 px-3.5 py-2 text-xs font-semibold text-neutral-700 bg-neutral-100 hover:bg-neutral-200 rounded-full transition"
+                className="hidden sm:inline-flex items-center gap-2 px-3.5 py-2 text-xs font-bold text-neutral-300 bg-white/[0.05] hover:bg-white/[0.1] border border-white/[0.08] rounded-full transition"
               >
                 <Eye className="w-3.5 h-3.5" />
-                <span>Canlı Vitrini Aç</span>
+                <span>Canlı Vitrin</span>
               </Link>
 
               <button
                 onClick={handleDownloadJSON}
-                className="inline-flex items-center gap-1.5 px-3 py-2 text-xs font-semibold text-neutral-700 bg-neutral-100 hover:bg-neutral-200 rounded-full transition"
+                className="inline-flex items-center gap-1.5 px-3.5 py-2 text-xs font-bold text-neutral-300 bg-white/[0.05] hover:bg-white/[0.1] border border-white/[0.08] rounded-full transition"
                 title="Yedek JSON indir"
               >
                 <Download className="w-3.5 h-3.5" />
-                <span className="hidden md:inline">JSON Yedekle</span>
+                <span className="hidden md:inline">Yedek İndir</span>
               </button>
 
               <button
                 onClick={handleOpenAddModal}
-                className="inline-flex items-center gap-2 px-4 py-2.5 bg-neutral-900 hover:bg-neutral-800 text-white rounded-full text-xs font-bold shadow-md transition"
+                className="inline-flex items-center gap-2 px-4 py-2.5 bg-gradient-to-r from-amber-400 to-amber-500 hover:from-amber-300 hover:to-amber-400 text-black rounded-full text-xs font-black shadow-lg shadow-amber-500/20 transition"
               >
                 <Plus className="w-4 h-4" />
                 <span>Yeni Ürün Ekle</span>
@@ -501,18 +501,18 @@ export default function AdminPage() {
             </div>
           </div>
 
-          {/* Navigation Sub-Tabs */}
-          <div className="flex items-center gap-6 border-t border-neutral-100 pt-1">
+          {/* Sub Navigation */}
+          <div className="flex items-center gap-6 border-t border-white/[0.06] pt-1">
             <button
               onClick={() => setActiveTab('products')}
               className={`py-3 text-xs font-bold border-b-2 transition flex items-center gap-2 ${
                 activeTab === 'products'
-                  ? 'border-neutral-900 text-neutral-900'
-                  : 'border-transparent text-neutral-400 hover:text-neutral-700'
+                  ? 'border-amber-400 text-amber-300'
+                  : 'border-transparent text-neutral-400 hover:text-white'
               }`}
             >
-              <span>Ürünler Listesi</span>
-              <span className="bg-neutral-200 text-neutral-700 text-[10px] px-2 py-0.5 rounded-full">
+              <span>Ürünler Kataloğu</span>
+              <span className="bg-white/[0.08] text-neutral-300 text-[10px] px-2 py-0.5 rounded-full font-mono">
                 {data.products.length}
               </span>
             </button>
@@ -520,8 +520,8 @@ export default function AdminPage() {
               onClick={() => setActiveTab('settings')}
               className={`py-3 text-xs font-bold border-b-2 transition flex items-center gap-2 ${
                 activeTab === 'settings'
-                  ? 'border-neutral-900 text-neutral-900'
-                  : 'border-transparent text-neutral-400 hover:text-neutral-700'
+                  ? 'border-amber-400 text-amber-300'
+                  : 'border-transparent text-neutral-400 hover:text-white'
               }`}
             >
               <Settings className="w-3.5 h-3.5" />
@@ -531,76 +531,74 @@ export default function AdminPage() {
         </div>
       </header>
 
-      {/* Main Container */}
+      {/* Main Admin Area */}
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         {activeTab === 'products' ? (
           <div>
-            {/* Filter Bar */}
-            <div className="bg-white p-4 rounded-2xl border border-neutral-200 shadow-sm mb-6 flex flex-col sm:flex-row items-center justify-between gap-4">
-              {/* Category Dropdown */}
-              <div className="flex items-center gap-2 w-full sm:w-auto">
-                <span className="text-xs font-bold text-neutral-500 uppercase">Kategori:</span>
+            {/* Filter / Search Bar */}
+            <div className="bg-[#12141e] p-4 rounded-2xl border border-white/[0.08] mb-6 flex flex-col sm:flex-row items-center justify-between gap-4">
+              <div className="flex items-center gap-3 w-full sm:w-auto">
+                <span className="text-[11px] font-bold text-neutral-400 uppercase tracking-wider">Kategori:</span>
                 <select
                   value={categoryFilter}
                   onChange={(e) => setCategoryFilter(e.target.value)}
-                  className="px-3 py-1.5 bg-neutral-100 border border-neutral-200 rounded-xl text-xs font-semibold text-neutral-800 focus:outline-none focus:ring-2 focus:ring-neutral-900"
+                  className="px-3.5 py-2 bg-white/[0.06] border border-white/[0.1] rounded-xl text-xs font-bold text-white focus:outline-none focus:border-amber-400"
                 >
-                  <option value="all">Tüm Kategoriler ({data.products.length})</option>
+                  <option value="all" className="bg-[#12141e]">Tüm Kategoriler ({data.products.length})</option>
                   {data.categories.map((c) => (
-                    <option key={c.id} value={c.slug}>
+                    <option key={c.id} value={c.slug} className="bg-[#12141e]">
                       {c.name} ({data.products.filter((p) => p.category === c.slug).length})
                     </option>
                   ))}
                 </select>
               </div>
 
-              {/* Search Bar */}
-              <div className="w-full sm:w-72">
+              <div className="w-full sm:w-80">
                 <input
                   type="text"
                   value={adminSearch}
                   onChange={(e) => setAdminSearch(e.target.value)}
-                  placeholder="Ürün adı ile ara..."
-                  className="w-full px-4 py-2 bg-neutral-100 border border-neutral-200 rounded-full text-xs text-neutral-800 placeholder-neutral-400 focus:outline-none focus:ring-2 focus:ring-neutral-900"
+                  placeholder="Ürün adı veya model ara..."
+                  className="w-full px-4 py-2 bg-white/[0.06] border border-white/[0.1] rounded-full text-xs text-white placeholder-neutral-500 focus:outline-none focus:border-amber-400"
                 />
               </div>
             </div>
 
-            {/* Products Table / Cards */}
+            {/* Products Table */}
             {adminFilteredProducts.length === 0 ? (
-              <div className="text-center py-16 bg-white rounded-3xl border border-neutral-200 p-8">
+              <div className="text-center py-16 bg-[#12141e] rounded-3xl border border-white/[0.08] p-8">
                 <span className="text-4xl block mb-3">📦</span>
-                <h3 className="text-base font-bold text-neutral-900">Ürün Bulunamadı</h3>
-                <p className="text-xs text-neutral-500 mt-1 mb-4">
-                  Bu filtreye uyan herhangi bir ürün bulunmuyor.
+                <h3 className="text-base font-bold text-white">Bu Kriterde Ürün Bulunamadı</h3>
+                <p className="text-xs text-neutral-400 mt-1 mb-4">
+                  Yeni bir ürün ekleyebilir veya filtreyi değiştirebilirsiniz.
                 </p>
                 <button
                   onClick={handleOpenAddModal}
-                  className="px-4 py-2 bg-neutral-900 text-white text-xs font-semibold rounded-full"
+                  className="px-5 py-2.5 bg-amber-400 text-black text-xs font-black rounded-full"
                 >
-                  İlk Ürünü Ekle
+                  Yeni Ürün Ekle
                 </button>
               </div>
             ) : (
-              <div className="bg-white rounded-3xl border border-neutral-200 overflow-hidden shadow-sm">
+              <div className="bg-[#12141e] rounded-3xl border border-white/[0.08] overflow-hidden shadow-2xl">
                 <div className="overflow-x-auto">
                   <table className="w-full text-left border-collapse">
                     <thead>
-                      <tr className="bg-neutral-50/80 border-b border-neutral-200 text-[11px] font-bold uppercase tracking-wider text-neutral-500">
-                        <th className="py-3.5 px-4">Görsel</th>
-                        <th className="py-3.5 px-4">Ürün Adı & Kategori</th>
-                        <th className="py-3.5 px-4">Fiyat</th>
-                        <th className="py-3.5 px-4">Renk Seçenekleri</th>
-                        <th className="py-3.5 px-4">Rozet</th>
-                        <th className="py-3.5 px-4 text-right">İşlemler</th>
+                      <tr className="bg-white/[0.03] border-b border-white/[0.08] text-[10px] font-mono font-bold uppercase tracking-widest text-neutral-400">
+                        <th className="py-4 px-5">Görsel</th>
+                        <th className="py-4 px-5">Model & Kategori</th>
+                        <th className="py-4 px-5">Fiyat</th>
+                        <th className="py-4 px-5">Renk Seçenekleri</th>
+                        <th className="py-4 px-5">Rozet</th>
+                        <th className="py-4 px-5 text-right">İşlemler</th>
                       </tr>
                     </thead>
-                    <tbody className="divide-y divide-neutral-100 text-sm">
+                    <tbody className="divide-y divide-white/[0.04] text-xs">
                       {adminFilteredProducts.map((prod) => (
-                        <tr key={prod.id} className="hover:bg-neutral-50/60 transition">
+                        <tr key={prod.id} className="hover:bg-white/[0.02] transition">
                           {/* Image */}
-                          <td className="py-3 px-4 w-16">
-                            <div className="w-12 h-12 rounded-xl bg-neutral-100 overflow-hidden border border-neutral-200 flex-shrink-0">
+                          <td className="py-3 px-5 w-16">
+                            <div className="w-12 h-12 rounded-xl bg-black/40 overflow-hidden border border-white/[0.1] flex-shrink-0">
                               {prod.image ? (
                                 <img
                                   src={prod.image}
@@ -608,7 +606,7 @@ export default function AdminPage() {
                                   className="w-full h-full object-cover"
                                 />
                               ) : (
-                                <div className="w-full h-full flex items-center justify-center text-xs text-neutral-400">
+                                <div className="w-full h-full flex items-center justify-center text-[10px] text-neutral-500">
                                   Yok
                                 </div>
                               )}
@@ -616,70 +614,70 @@ export default function AdminPage() {
                           </td>
 
                           {/* Name & Category */}
-                          <td className="py-3 px-4">
-                            <div className="font-bold text-neutral-900 leading-snug">{prod.name}</div>
-                            <div className="text-[11px] font-semibold text-neutral-400 uppercase mt-0.5">
+                          <td className="py-3 px-5">
+                            <div className="font-bold text-white text-sm">{prod.name}</div>
+                            <div className="text-[10px] font-mono font-semibold text-neutral-400 uppercase mt-0.5">
                               {prod.category}
                             </div>
                           </td>
 
                           {/* Price */}
-                          <td className="py-3 px-4">
-                            <span className="font-black text-neutral-900">
+                          <td className="py-3 px-5">
+                            <span className="font-black text-amber-300 text-sm">
                               {formatPrice(prod.price)}
                             </span>
                             {prod.oldPrice && (
-                              <span className="block text-[11px] text-neutral-400 line-through">
+                              <span className="block text-[10px] text-neutral-500 line-through">
                                 {formatPrice(prod.oldPrice)}
                               </span>
                             )}
                           </td>
 
                           {/* Colors */}
-                          <td className="py-3 px-4">
+                          <td className="py-3 px-5">
                             {prod.colors && prod.colors.length > 0 ? (
                               <div className="flex items-center gap-1.5 flex-wrap max-w-xs">
                                 {prod.colors.map((c, i) => (
                                   <span
                                     key={i}
                                     title={c.name}
-                                    className="w-4 h-4 rounded-full border border-neutral-300 inline-block shadow-sm"
+                                    className="w-4 h-4 rounded-full border border-black/30 inline-block shadow-sm"
                                     style={{ backgroundColor: c.hex }}
                                   />
                                 ))}
-                                <span className="text-[11px] text-neutral-500 font-medium ml-1">
+                                <span className="text-[10px] text-neutral-400 font-medium ml-1">
                                   ({prod.colors.length} renk)
                                 </span>
                               </div>
                             ) : (
-                              <span className="text-xs text-neutral-400">-</span>
+                              <span className="text-neutral-500">-</span>
                             )}
                           </td>
 
                           {/* Badge */}
-                          <td className="py-3 px-4">
+                          <td className="py-3 px-5">
                             {prod.badge ? (
-                              <span className="inline-block px-2.5 py-0.5 text-[10px] font-bold rounded-full bg-neutral-900 text-white uppercase">
+                              <span className="inline-block px-2.5 py-0.5 text-[9px] font-black rounded-full bg-amber-400/10 text-amber-300 border border-amber-400/20 uppercase">
                                 {prod.badge}
                               </span>
                             ) : (
-                              <span className="text-xs text-neutral-400">-</span>
+                              <span className="text-neutral-500">-</span>
                             )}
                           </td>
 
                           {/* Actions */}
-                          <td className="py-3 px-4 text-right">
+                          <td className="py-3 px-5 text-right">
                             <div className="flex items-center justify-end gap-2">
                               <button
                                 onClick={() => handleOpenEditModal(prod)}
-                                className="p-2 rounded-xl bg-neutral-100 hover:bg-neutral-200 text-neutral-700 transition"
+                                className="p-2 rounded-xl bg-white/[0.05] hover:bg-white/[0.1] text-neutral-300 transition"
                                 title="Düzenle"
                               >
                                 <Edit3 className="w-4 h-4" />
                               </button>
                               <button
                                 onClick={() => handleDeleteProduct(prod.id, prod.name)}
-                                className="p-2 rounded-xl bg-rose-50 hover:bg-rose-100 text-rose-600 transition"
+                                className="p-2 rounded-xl bg-rose-950/40 hover:bg-rose-900/60 text-rose-400 border border-rose-500/20 transition"
                                 title="Sil"
                               >
                                 <Trash2 className="w-4 h-4" />
@@ -696,40 +694,40 @@ export default function AdminPage() {
           </div>
         ) : (
           /* SETTINGS TAB */
-          <div className="max-w-2xl bg-white rounded-3xl border border-neutral-200 p-6 sm:p-8 shadow-sm">
-            <h2 className="text-xl font-black text-neutral-900 mb-1">Site & İletişim Ayarları</h2>
-            <p className="text-xs text-neutral-500 mb-6">
-              Vitrininizde görüntülenecek başlıklar ve WhatsApp iletişim numarasını buradan güncelleyin.
+          <div className="max-w-2xl bg-[#12141e] rounded-3xl border border-white/[0.08] p-6 sm:p-8 shadow-2xl">
+            <h2 className="text-xl font-black text-white mb-1">Site & WhatsApp Danışma Ayarları</h2>
+            <p className="text-xs text-neutral-400 mb-6">
+              Müşterilerinizin göreceği başlıkları ve WhatsApp sipariş numarasını buradan yönetin.
             </p>
 
             <form onSubmit={handleSaveSettings} className="space-y-5">
               <div>
-                <label className="block text-xs font-bold uppercase tracking-wider text-neutral-600 mb-1.5">
+                <label className="block text-xs font-bold uppercase tracking-wider text-neutral-300 mb-1.5">
                   Site Başlığı
                 </label>
                 <input
                   type="text"
                   value={settingsForm.siteName}
                   onChange={(e) => setSettingsForm({ ...settingsForm, siteName: e.target.value })}
-                  className="w-full px-4 py-2.5 bg-neutral-50 border border-neutral-200 rounded-xl text-sm font-semibold text-neutral-900 focus:outline-none focus:ring-2 focus:ring-neutral-900"
+                  className="w-full px-4 py-2.5 bg-white/[0.05] border border-white/[0.1] rounded-xl text-sm font-semibold text-white focus:outline-none focus:border-amber-400"
                 />
               </div>
 
               <div>
-                <label className="block text-xs font-bold uppercase tracking-wider text-neutral-600 mb-1.5">
+                <label className="block text-xs font-bold uppercase tracking-wider text-neutral-300 mb-1.5">
                   Alt Başlık / Slogan
                 </label>
                 <input
                   type="text"
                   value={settingsForm.siteSubtitle}
                   onChange={(e) => setSettingsForm({ ...settingsForm, siteSubtitle: e.target.value })}
-                  className="w-full px-4 py-2.5 bg-neutral-50 border border-neutral-200 rounded-xl text-sm font-semibold text-neutral-900 focus:outline-none focus:ring-2 focus:ring-neutral-900"
+                  className="w-full px-4 py-2.5 bg-white/[0.05] border border-white/[0.1] rounded-xl text-sm font-semibold text-white focus:outline-none focus:border-amber-400"
                 />
               </div>
 
               <div>
-                <label className="block text-xs font-bold uppercase tracking-wider text-neutral-600 mb-1.5">
-                  WhatsApp İletişim Numarası
+                <label className="block text-xs font-bold uppercase tracking-wider text-neutral-300 mb-1.5">
+                  WhatsApp Danışma Numarası
                 </label>
                 <div className="relative">
                   <Phone className="w-4 h-4 text-neutral-400 absolute left-3.5 top-1/2 -translate-y-1/2" />
@@ -738,48 +736,47 @@ export default function AdminPage() {
                     value={settingsForm.whatsappNumber}
                     onChange={(e) => setSettingsForm({ ...settingsForm, whatsappNumber: e.target.value })}
                     placeholder="905xxxxxxxxx (Ülke kodu ile)"
-                    className="w-full pl-10 pr-4 py-2.5 bg-neutral-50 border border-neutral-200 rounded-xl text-sm font-semibold text-neutral-900 focus:outline-none focus:ring-2 focus:ring-neutral-900"
+                    className="w-full pl-10 pr-4 py-2.5 bg-white/[0.05] border border-white/[0.1] rounded-xl text-sm font-semibold text-white focus:outline-none focus:border-amber-400"
                   />
                 </div>
-                <p className="text-[11px] text-neutral-500 mt-1">
-                  Müşteriler ürün detayından "WhatsApp ile Bilgi Al" butonuna bastıklarında bu numaraya mesaj iletilir.
+                <p className="text-[11px] text-neutral-400 mt-1">
+                  Müşteriler ürün detayından "WhatsApp ile Sipariş & Bilgi Al" butonuna bastıklarında bu numaraya ürün adı, seçilen renk ve fiyatla mesaj iletilir.
                 </p>
               </div>
 
               <div>
-                <label className="block text-xs font-bold uppercase tracking-wider text-neutral-600 mb-1.5">
+                <label className="block text-xs font-bold uppercase tracking-wider text-neutral-300 mb-1.5">
                   Üst Duyuru Bandı Metni
                 </label>
                 <input
                   type="text"
                   value={settingsForm.announcementText}
                   onChange={(e) => setSettingsForm({ ...settingsForm, announcementText: e.target.value })}
-                  className="w-full px-4 py-2.5 bg-neutral-50 border border-neutral-200 rounded-xl text-sm font-semibold text-neutral-900 focus:outline-none focus:ring-2 focus:ring-neutral-900"
+                  className="w-full px-4 py-2.5 bg-white/[0.05] border border-white/[0.1] rounded-xl text-sm font-semibold text-white focus:outline-none focus:border-amber-400"
                 />
               </div>
 
               <div>
-                <label className="block text-xs font-bold uppercase tracking-wider text-neutral-600 mb-1.5">
+                <label className="block text-xs font-bold uppercase tracking-wider text-neutral-300 mb-1.5">
                   Yönetim Paneli Şifresi (PIN)
                 </label>
                 <input
                   type="text"
                   value={settingsForm.adminPin}
                   onChange={(e) => setSettingsForm({ ...settingsForm, adminPin: e.target.value })}
-                  className="w-full px-4 py-2.5 bg-neutral-50 border border-neutral-200 rounded-xl text-sm font-semibold text-neutral-900 focus:outline-none focus:ring-2 focus:ring-neutral-900"
+                  className="w-full px-4 py-2.5 bg-white/[0.05] border border-white/[0.1] rounded-xl text-sm font-semibold text-white focus:outline-none focus:border-amber-400"
                 />
               </div>
 
-              <div className="pt-4 border-t border-neutral-100 flex items-center justify-between">
+              <div className="pt-4 border-t border-white/[0.08] flex items-center justify-between">
                 <button
                   type="submit"
-                  className="px-6 py-3 bg-neutral-900 hover:bg-neutral-800 text-white font-bold rounded-xl text-xs shadow-md transition"
+                  className="px-6 py-3 bg-gradient-to-r from-amber-400 to-amber-500 hover:from-amber-300 hover:to-amber-400 text-black font-black rounded-xl text-xs shadow-md transition"
                 >
                   Ayarları Kaydet
                 </button>
 
-                {/* Import JSON button */}
-                <label className="inline-flex items-center gap-2 px-4 py-2.5 bg-neutral-100 hover:bg-neutral-200 text-neutral-700 text-xs font-semibold rounded-xl cursor-pointer transition">
+                <label className="inline-flex items-center gap-2 px-4 py-2.5 bg-white/[0.05] hover:bg-white/[0.1] border border-white/[0.08] text-neutral-300 text-xs font-bold rounded-xl cursor-pointer transition">
                   <FileUp className="w-3.5 h-3.5" />
                   <span>Yedek JSON Yükle</span>
                   <input
@@ -799,31 +796,31 @@ export default function AdminPage() {
       {isModalOpen && (
         <div className="fixed inset-0 z-50 overflow-y-auto">
           <div
-            className="fixed inset-0 bg-neutral-950/70 backdrop-blur-sm"
+            className="fixed inset-0 bg-black/85 backdrop-blur-2xl"
             onClick={() => setIsModalOpen(false)}
           />
 
           <div className="flex min-h-full items-center justify-center p-3 sm:p-6 text-center">
-            <div className="relative transform overflow-hidden rounded-3xl bg-white text-left shadow-2xl transition-all w-full max-w-2xl my-8 border border-neutral-200 p-6 sm:p-8">
+            <div className="relative transform overflow-hidden rounded-[32px] bg-[#12141e] border border-white/[0.12] text-left shadow-2xl transition-all w-full max-w-2xl my-8 p-6 sm:p-8">
               {/* Close Button */}
               <button
                 onClick={() => setIsModalOpen(false)}
-                className="absolute right-5 top-5 p-2 rounded-full bg-neutral-100 hover:bg-neutral-200 text-neutral-600 transition"
+                className="absolute right-5 top-5 p-2 rounded-full bg-white/[0.08] hover:bg-white/[0.15] text-neutral-300 transition"
               >
                 <X className="w-5 h-5" />
               </button>
 
-              <h2 className="text-xl font-black text-neutral-900 mb-1">
+              <h2 className="text-xl font-black text-white mb-1">
                 {editingProduct ? 'Ürünü Düzenle' : 'Yeni Ürün Ekle'}
               </h2>
-              <p className="text-xs text-neutral-500 mb-6">
+              <p className="text-xs text-neutral-400 mb-6">
                 Ürün adı, kategorisi, fiyatı, görseli ve renk seçeneklerini belirleyin.
               </p>
 
               <form onSubmit={handleSaveProduct} className="space-y-5">
                 {/* Product Name */}
                 <div>
-                  <label className="block text-xs font-bold uppercase tracking-wider text-neutral-700 mb-1.5">
+                  <label className="block text-xs font-bold uppercase tracking-wider text-neutral-300 mb-1.5">
                     Ürün Adı *
                   </label>
                   <input
@@ -832,23 +829,23 @@ export default function AdminPage() {
                     value={formData.name}
                     onChange={(e) => setFormData({ ...formData, name: e.target.value })}
                     placeholder="Örn: Titanium AMOLED Akıllı Saat"
-                    className="w-full px-4 py-2.5 bg-neutral-50 border border-neutral-200 rounded-xl text-sm font-semibold text-neutral-900 focus:outline-none focus:ring-2 focus:ring-neutral-900"
+                    className="w-full px-4 py-2.5 bg-white/[0.05] border border-white/[0.1] rounded-xl text-sm font-semibold text-white focus:outline-none focus:border-amber-400"
                   />
                 </div>
 
                 {/* Category & Badge */}
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                   <div>
-                    <label className="block text-xs font-bold uppercase tracking-wider text-neutral-700 mb-1.5">
+                    <label className="block text-xs font-bold uppercase tracking-wider text-neutral-300 mb-1.5">
                       Kategori *
                     </label>
                     <select
                       value={formData.category}
                       onChange={(e) => setFormData({ ...formData, category: e.target.value })}
-                      className="w-full px-4 py-2.5 bg-neutral-50 border border-neutral-200 rounded-xl text-sm font-semibold text-neutral-900 focus:outline-none focus:ring-2 focus:ring-neutral-900"
+                      className="w-full px-4 py-2.5 bg-white/[0.05] border border-white/[0.1] rounded-xl text-sm font-semibold text-white focus:outline-none focus:border-amber-400"
                     >
                       {data.categories.map((c) => (
-                        <option key={c.id} value={c.slug}>
+                        <option key={c.id} value={c.slug} className="bg-[#12141e]">
                           {c.name}
                         </option>
                       ))}
@@ -856,7 +853,7 @@ export default function AdminPage() {
                   </div>
 
                   <div>
-                    <label className="block text-xs font-bold uppercase tracking-wider text-neutral-700 mb-1.5">
+                    <label className="block text-xs font-bold uppercase tracking-wider text-neutral-300 mb-1.5">
                       Rozet (Opsiyonel)
                     </label>
                     <input
@@ -864,7 +861,7 @@ export default function AdminPage() {
                       value={formData.badge}
                       onChange={(e) => setFormData({ ...formData, badge: e.target.value })}
                       placeholder="Örn: Yeni, Çok Satan, Fırsat"
-                      className="w-full px-4 py-2.5 bg-neutral-50 border border-neutral-200 rounded-xl text-sm font-semibold text-neutral-900 focus:outline-none focus:ring-2 focus:ring-neutral-900"
+                      className="w-full px-4 py-2.5 bg-white/[0.05] border border-white/[0.1] rounded-xl text-sm font-semibold text-white focus:outline-none focus:border-amber-400"
                     />
                   </div>
                 </div>
@@ -872,7 +869,7 @@ export default function AdminPage() {
                 {/* Price & Old Price */}
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                   <div>
-                    <label className="block text-xs font-bold uppercase tracking-wider text-neutral-700 mb-1.5">
+                    <label className="block text-xs font-bold uppercase tracking-wider text-neutral-300 mb-1.5">
                       Satış Fiyatı (₺) *
                     </label>
                     <input
@@ -883,13 +880,13 @@ export default function AdminPage() {
                       value={formData.price}
                       onChange={(e) => setFormData({ ...formData, price: e.target.value })}
                       placeholder="Örn: 2450"
-                      className="w-full px-4 py-2.5 bg-neutral-50 border border-neutral-200 rounded-xl text-sm font-semibold text-neutral-900 focus:outline-none focus:ring-2 focus:ring-neutral-900"
+                      className="w-full px-4 py-2.5 bg-white/[0.05] border border-white/[0.1] rounded-xl text-sm font-semibold text-white focus:outline-none focus:border-amber-400"
                     />
                   </div>
 
                   <div>
-                    <label className="block text-xs font-bold uppercase tracking-wider text-neutral-700 mb-1.5">
-                      Eski Fiyat (İndirim Gösterimi için Opsiyonel)
+                    <label className="block text-xs font-bold uppercase tracking-wider text-neutral-300 mb-1.5">
+                      Eski Fiyat (İndirim Gösterimi)
                     </label>
                     <input
                       type="number"
@@ -898,20 +895,19 @@ export default function AdminPage() {
                       value={formData.oldPrice}
                       onChange={(e) => setFormData({ ...formData, oldPrice: e.target.value })}
                       placeholder="Örn: 2950"
-                      className="w-full px-4 py-2.5 bg-neutral-50 border border-neutral-200 rounded-xl text-sm font-semibold text-neutral-900 focus:outline-none focus:ring-2 focus:ring-neutral-900"
+                      className="w-full px-4 py-2.5 bg-white/[0.05] border border-white/[0.1] rounded-xl text-sm font-semibold text-white focus:outline-none focus:border-amber-400"
                     />
                   </div>
                 </div>
 
                 {/* Product Image Section */}
-                <div className="p-4 bg-neutral-50 rounded-2xl border border-neutral-200 space-y-3">
-                  <label className="block text-xs font-bold uppercase tracking-wider text-neutral-700">
+                <div className="p-4 bg-white/[0.03] rounded-2xl border border-white/[0.08] space-y-3">
+                  <label className="block text-xs font-bold uppercase tracking-wider text-neutral-300">
                     Ürün Görseli
                   </label>
 
-                  {/* File upload from local computer */}
                   <div className="flex flex-col sm:flex-row items-center gap-3">
-                    <label className="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-4 py-2.5 bg-neutral-900 hover:bg-neutral-800 text-white text-xs font-bold rounded-xl cursor-pointer transition shadow-sm">
+                    <label className="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-4 py-2.5 bg-white/[0.08] hover:bg-white/[0.15] text-white text-xs font-bold rounded-xl cursor-pointer transition border border-white/[0.1]">
                       <Upload className="w-3.5 h-3.5" />
                       <span>{imageUploadLoading ? 'Yükleniyor...' : 'Bilgisayardan Resim Seç'}</span>
                       <input
@@ -923,28 +919,28 @@ export default function AdminPage() {
                       />
                     </label>
 
-                    <span className="text-xs text-neutral-400 font-medium">veya URL yapıştırın:</span>
+                    <span className="text-xs text-neutral-500 font-medium">veya URL yapıştırın:</span>
 
                     <input
                       type="url"
                       value={formData.image}
                       onChange={(e) => setFormData({ ...formData, image: e.target.value })}
                       placeholder="https://... (Resim bağlantısı)"
-                      className="w-full sm:flex-1 px-3 py-2 bg-white border border-neutral-200 rounded-xl text-xs text-neutral-900 focus:outline-none focus:ring-2 focus:ring-neutral-900"
+                      className="w-full sm:flex-1 px-3 py-2 bg-white/[0.05] border border-white/[0.1] rounded-xl text-xs text-white focus:outline-none focus:border-amber-400"
                     />
                   </div>
 
                   {/* Image Preview */}
                   {formData.image && (
                     <div className="flex items-center gap-3 pt-2">
-                      <div className="w-16 h-16 rounded-xl bg-neutral-200 overflow-hidden border border-neutral-300 flex-shrink-0">
+                      <div className="w-16 h-16 rounded-xl bg-black/40 overflow-hidden border border-white/[0.15] flex-shrink-0">
                         <img
                           src={formData.image}
                           alt="Önizleme"
                           className="w-full h-full object-cover"
                         />
                       </div>
-                      <span className="text-xs text-emerald-600 font-semibold flex items-center gap-1">
+                      <span className="text-xs text-emerald-400 font-semibold flex items-center gap-1">
                         <Check className="w-3.5 h-3.5" />
                         Görsel başarıyla seçildi
                       </span>
@@ -952,13 +948,13 @@ export default function AdminPage() {
                   )}
                 </div>
 
-                {/* Color Options Section (Requested by user) */}
-                <div className="p-4 bg-neutral-50 rounded-2xl border border-neutral-200 space-y-3">
+                {/* Color Options Section */}
+                <div className="p-4 bg-white/[0.03] rounded-2xl border border-white/[0.08] space-y-3">
                   <div className="flex items-center justify-between">
-                    <label className="block text-xs font-bold uppercase tracking-wider text-neutral-700">
+                    <label className="block text-xs font-bold uppercase tracking-wider text-neutral-300">
                       Renk Seçenekleri
                     </label>
-                    <span className="text-[11px] text-neutral-400">
+                    <span className="text-[11px] text-neutral-400 font-mono">
                       {formData.colors.length} renk eklendi
                     </span>
                   </div>
@@ -969,17 +965,17 @@ export default function AdminPage() {
                       {formData.colors.map((c, idx) => (
                         <div
                           key={idx}
-                          className="flex items-center gap-2 bg-white px-3 py-1.5 rounded-full border border-neutral-200 shadow-sm text-xs font-semibold"
+                          className="flex items-center gap-2 bg-white/[0.06] px-3 py-1.5 rounded-full border border-white/[0.1] text-xs font-semibold text-white"
                         >
                           <span
-                            className="w-3.5 h-3.5 rounded-full border border-black/10 inline-block"
+                            className="w-3.5 h-3.5 rounded-full border border-black/20 inline-block"
                             style={{ backgroundColor: c.hex }}
                           />
                           <span>{c.name}</span>
                           <button
                             type="button"
                             onClick={() => handleRemoveColor(idx)}
-                            className="text-neutral-400 hover:text-rose-600 text-xs ml-1"
+                            className="text-neutral-400 hover:text-rose-400 text-xs ml-1"
                           >
                             ✕
                           </button>
@@ -988,9 +984,9 @@ export default function AdminPage() {
                     </div>
                   )}
 
-                  {/* Fast Preset Color Selector */}
+                  {/* Preset Fast Colors */}
                   <div>
-                    <span className="text-[11px] font-bold text-neutral-500 block mb-1.5">
+                    <span className="text-[10px] font-bold text-neutral-400 uppercase tracking-wider block mb-1.5">
                       Hızlı Renk Seçimi:
                     </span>
                     <div className="flex flex-wrap gap-1.5">
@@ -999,10 +995,10 @@ export default function AdminPage() {
                           key={i}
                           type="button"
                           onClick={() => handleAddPresetColor(color)}
-                          className="inline-flex items-center gap-1.5 px-2.5 py-1 bg-white hover:bg-neutral-100 border border-neutral-200 rounded-lg text-xs font-medium text-neutral-700 transition"
+                          className="inline-flex items-center gap-1.5 px-2.5 py-1 bg-white/[0.04] hover:bg-white/[0.09] border border-white/[0.08] rounded-lg text-xs font-medium text-neutral-300 transition"
                         >
                           <span
-                            className="w-3 h-3 rounded-full border border-black/10 inline-block"
+                            className="w-3 h-3 rounded-full border border-black/20 inline-block"
                             style={{ backgroundColor: color.hex }}
                           />
                           <span>{color.name}</span>
@@ -1012,25 +1008,24 @@ export default function AdminPage() {
                   </div>
 
                   {/* Custom Color Input */}
-                  <div className="flex items-center gap-2 pt-2 border-t border-neutral-200/60">
+                  <div className="flex items-center gap-2 pt-2 border-t border-white/[0.06]">
                     <input
                       type="color"
                       value={customColorHex}
                       onChange={(e) => setCustomColorHex(e.target.value)}
-                      className="w-8 h-8 rounded-lg cursor-pointer border border-neutral-300 p-0.5 bg-white"
-                      title="Özel renk seç"
+                      className="w-8 h-8 rounded-lg cursor-pointer border border-white/[0.1] p-0.5 bg-black"
                     />
                     <input
                       type="text"
                       value={customColorName}
                       onChange={(e) => setCustomColorName(e.target.value)}
                       placeholder="Örn: Gece Mavisi, Rose Gold..."
-                      className="flex-1 px-3 py-1.5 bg-white border border-neutral-200 rounded-xl text-xs text-neutral-900 focus:outline-none"
+                      className="flex-1 px-3 py-1.5 bg-white/[0.05] border border-white/[0.1] rounded-xl text-xs text-white focus:outline-none"
                     />
                     <button
                       type="button"
                       onClick={handleAddCustomColor}
-                      className="px-3 py-1.5 bg-neutral-900 text-white rounded-xl text-xs font-semibold hover:bg-neutral-800 transition"
+                      className="px-3.5 py-1.5 bg-amber-400 hover:bg-amber-300 text-black rounded-xl text-xs font-bold transition"
                     >
                       Renk Ekle
                     </button>
@@ -1039,38 +1034,38 @@ export default function AdminPage() {
 
                 {/* Description */}
                 <div>
-                  <label className="block text-xs font-bold uppercase tracking-wider text-neutral-700 mb-1.5">
+                  <label className="block text-xs font-bold uppercase tracking-wider text-neutral-300 mb-1.5">
                     Ürün Açıklaması
                   </label>
                   <textarea
                     rows={3}
                     value={formData.description}
                     onChange={(e) => setFormData({ ...formData, description: e.target.value })}
-                    placeholder="Ürünün genel açıklaması, kullanım alanları..."
-                    className="w-full px-4 py-2.5 bg-neutral-50 border border-neutral-200 rounded-xl text-sm text-neutral-900 focus:outline-none focus:ring-2 focus:ring-neutral-900"
+                    placeholder="Ürünün genel açıklaması..."
+                    className="w-full px-4 py-2.5 bg-white/[0.05] border border-white/[0.1] rounded-xl text-sm text-white focus:outline-none focus:border-amber-400"
                   />
                 </div>
 
                 {/* Features (Bullet points) */}
                 <div>
-                  <label className="block text-xs font-bold uppercase tracking-wider text-neutral-700 mb-1.5">
+                  <label className="block text-xs font-bold uppercase tracking-wider text-neutral-300 mb-1.5">
                     Öne Çıkan Özellikler (Her satıra bir özellik yazın)
                   </label>
                   <textarea
                     rows={3}
                     value={formData.featuresText}
                     onChange={(e) => setFormData({ ...formData, featuresText: e.target.value })}
-                    placeholder="Safir Cam&#10;50m Su Geçirmezlik&#10;Titanyum Kasa"
-                    className="w-full px-4 py-2.5 bg-neutral-50 border border-neutral-200 rounded-xl text-sm text-neutral-900 focus:outline-none focus:ring-2 focus:ring-neutral-900 font-mono text-xs"
+                    placeholder="Safir Çizilmez Cam&#10;50m Su Geçirmezlik&#10;Titanyum Kasa"
+                    className="w-full px-4 py-2.5 bg-white/[0.05] border border-white/[0.1] rounded-xl text-sm text-white focus:outline-none focus:border-amber-400 font-mono text-xs"
                   />
                 </div>
 
-                {/* Submit button */}
-                <div className="pt-4 border-t border-neutral-200 flex items-center justify-end gap-3">
+                {/* Actions */}
+                <div className="pt-4 border-t border-white/[0.08] flex items-center justify-end gap-3">
                   <button
                     type="button"
                     onClick={() => setIsModalOpen(false)}
-                    className="px-5 py-2.5 rounded-xl border border-neutral-200 text-xs font-semibold text-neutral-600 hover:bg-neutral-100 transition"
+                    className="px-5 py-2.5 rounded-xl border border-white/[0.1] text-xs font-bold text-neutral-400 hover:text-white hover:bg-white/[0.05] transition"
                   >
                     İptal
                   </button>
@@ -1078,7 +1073,7 @@ export default function AdminPage() {
                   <button
                     type="submit"
                     disabled={isSaving}
-                    className="inline-flex items-center gap-2 px-6 py-2.5 bg-neutral-900 hover:bg-neutral-800 text-white text-xs font-bold rounded-xl shadow-lg transition"
+                    className="inline-flex items-center gap-2 px-6 py-2.5 bg-gradient-to-r from-amber-400 to-amber-500 hover:from-amber-300 hover:to-amber-400 text-black text-xs font-black rounded-xl shadow-lg transition"
                   >
                     <Save className="w-4 h-4" />
                     <span>{isSaving ? 'Kaydediliyor...' : 'Ürünü Kaydet'}</span>

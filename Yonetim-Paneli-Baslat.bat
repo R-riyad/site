@@ -18,3 +18,4 @@ echo.
 start "" http://localhost:3000/admin
 npm run dev
 pause
+

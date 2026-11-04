@@ -3,7 +3,7 @@
 import React, { useState } from 'react';
 import { Product, ProductColor } from '@/types';
 import { formatPrice } from '@/lib/format';
-import { Eye, Check, Sparkles } from 'lucide-react';
+import { Eye, Check, Sparkles, ArrowRight } from 'lucide-react';
 
 interface ProductCardProps {
   product: Product;
@@ -24,91 +24,103 @@ export default function ProductCard({ product, onOpenDetails }: ProductCardProps
   return (
     <div
       onClick={() => onOpenDetails(product, selectedColor)}
-      className="group relative bg-white rounded-2xl border border-neutral-200/80 overflow-hidden shadow-sm hover:shadow-xl hover:border-neutral-300 transition-all duration-300 flex flex-col cursor-pointer"
+      className="group relative bg-[#12141c]/60 backdrop-blur-xl rounded-3xl border border-white/[0.08] hover:border-amber-400/40 overflow-hidden shadow-2xl hover:shadow-[0_0_35px_rgba(251,191,36,0.12)] transition-all duration-300 flex flex-col cursor-pointer"
     >
-      {/* Image Container */}
-      <div className="relative aspect-square w-full bg-neutral-100 overflow-hidden">
+      {/* Visual Image Container */}
+      <div className="relative aspect-square w-full bg-[#0a0b10] overflow-hidden">
+        {/* Subtle Ambient Glow Behind Image */}
+        <div className="absolute inset-0 bg-gradient-to-t from-[#12141c] via-transparent to-transparent opacity-80 z-10" />
+
         {product.image && !imageError ? (
           <img
             src={product.image}
             alt={product.name}
             onError={() => setImageError(true)}
-            className="w-full h-full object-cover object-center group-hover:scale-105 transition-transform duration-500 ease-out"
+            className="w-full h-full object-cover object-center group-hover:scale-108 transition-transform duration-700 ease-out"
           />
         ) : (
-          <div className="w-full h-full flex flex-col items-center justify-center bg-neutral-100 text-neutral-400 p-4 text-center">
-            <span className="text-3xl mb-1">📦</span>
-            <span className="text-xs font-medium">Görsel Eklenmedi</span>
+          <div className="w-full h-full flex flex-col items-center justify-center bg-neutral-900/50 text-neutral-500 p-4 text-center">
+            <span className="text-4xl mb-2">📦</span>
+            <span className="text-xs font-semibold">Görsel Hazırlanıyor</span>
           </div>
         )}
 
-        {/* Badge Overlay */}
-        {product.badge && (
-          <div className="absolute top-3 left-3 z-10">
-            <span className="inline-flex items-center gap-1 px-2.5 py-1 text-[11px] font-bold tracking-wide uppercase bg-neutral-900/90 text-white rounded-full backdrop-blur-md shadow-sm">
+        {/* Top Floating Badges */}
+        <div className="absolute top-3.5 left-3.5 right-3.5 z-20 flex items-center justify-between pointer-events-none">
+          {product.badge ? (
+            <span className="inline-flex items-center gap-1.5 px-3 py-1 text-[10px] font-black tracking-wider uppercase bg-black/80 text-amber-300 rounded-full backdrop-blur-md border border-amber-400/30 shadow-lg">
               <Sparkles className="w-3 h-3 text-amber-400" />
               {product.badge}
             </span>
-          </div>
-        )}
+          ) : (
+            <span />
+          )}
 
-        {/* Quick View Hover Pill */}
-        <div className="absolute inset-0 bg-neutral-950/20 opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-center justify-center p-4">
-          <span className="inline-flex items-center gap-2 px-4 py-2 bg-white text-neutral-900 rounded-full text-xs font-semibold shadow-lg transform translate-y-2 group-hover:translate-y-0 transition-transform duration-300">
-            <Eye className="w-4 h-4 text-neutral-700" />
-            <span>Detayları İncele</span>
+          {/* In Stock Dot */}
+          <span className="inline-flex items-center gap-1.5 px-2.5 py-1 text-[10px] font-bold bg-black/70 backdrop-blur-md text-emerald-400 rounded-full border border-emerald-500/20">
+            <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
+            <span>Mevcut</span>
+          </span>
+        </div>
+
+        {/* Quick View Hover Overlay Pill */}
+        <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity duration-300 z-20 flex items-center justify-center p-4">
+          <span className="inline-flex items-center gap-2 px-5 py-2.5 bg-white text-black rounded-full text-xs font-black shadow-2xl transform translate-y-3 group-hover:translate-y-0 transition-transform duration-300">
+            <Eye className="w-4 h-4 text-black" />
+            <span>Detay & Özellikler</span>
           </span>
         </div>
       </div>
 
-      {/* Product Content */}
-      <div className="p-4 sm:p-5 flex-1 flex flex-col justify-between">
+      {/* Product Content Details */}
+      <div className="p-5 sm:p-6 flex-1 flex flex-col justify-between">
         <div>
-          {/* Category Tag */}
-          <div className="text-[11px] font-bold tracking-wider uppercase text-neutral-400 mb-1">
-            {product.category.toUpperCase()}
+          {/* Category Eyebrow */}
+          <div className="flex items-center justify-between text-[10px] font-mono tracking-widest uppercase text-neutral-400 mb-1.5">
+            <span>{product.category}</span>
+            <span className="text-neutral-500">2026 SERİSİ</span>
           </div>
 
           {/* Product Name */}
-          <h3 className="font-bold text-base sm:text-lg text-neutral-900 group-hover:text-amber-700 transition line-clamp-1 mb-2">
+          <h3 className="font-bold text-base sm:text-lg text-white group-hover:text-amber-300 transition-colors duration-200 line-clamp-1 mb-2">
             {product.name}
           </h3>
 
-          {/* Description Snippet */}
-          <p className="text-xs text-neutral-500 line-clamp-2 leading-relaxed mb-3">
+          {/* Description */}
+          <p className="text-xs text-neutral-400 line-clamp-2 leading-relaxed mb-4 font-normal">
             {product.description}
           </p>
 
-          {/* Color Options Swatches */}
+          {/* Interactive Color Swatches */}
           {product.colors && product.colors.length > 0 && (
-            <div className="mb-4 pt-1">
-              <div className="flex items-center justify-between text-[11px] text-neutral-500 mb-1.5 font-medium">
-                <span>Renk:</span>
-                <span className="font-semibold text-neutral-800">
+            <div className="mb-5 pt-2 border-t border-white/[0.06]">
+              <div className="flex items-center justify-between text-[11px] mb-2 font-medium">
+                <span className="text-neutral-400">Renk Seçeneği:</span>
+                <span className="font-bold text-amber-300 bg-amber-400/10 px-2 py-0.5 rounded-full border border-amber-400/20 text-[10px]">
                   {selectedColor?.name || product.colors[0]?.name}
                 </span>
               </div>
-              <div className="flex items-center gap-1.5 flex-wrap">
+              <div className="flex items-center gap-2 flex-wrap">
                 {product.colors.map((color, index) => {
-                  const isSelected = selectedColor?.name === color.name;
+                  const isSelected = (selectedColor?.name || product.colors?.[0]?.name) === color.name;
                   return (
                     <button
                       key={index}
                       type="button"
                       onClick={(e) => handleColorClick(e, color)}
                       title={color.name}
-                      className={`relative w-6 h-6 rounded-full border transition-all transform hover:scale-110 flex items-center justify-center ${
+                      className={`relative w-6 h-6 rounded-full border transition-all transform hover:scale-115 flex items-center justify-center ${
                         isSelected
-                          ? 'ring-2 ring-neutral-900 ring-offset-2 border-transparent scale-105'
-                          : 'border-neutral-300 hover:border-neutral-400'
+                          ? 'ring-2 ring-amber-400 ring-offset-2 ring-offset-[#12141c] border-transparent scale-110 shadow-lg'
+                          : 'border-white/20 hover:border-white/50 opacity-80 hover:opacity-100'
                       }`}
                       style={{ backgroundColor: color.hex }}
                     >
                       {isSelected && (
                         <Check
-                          className={`w-3.5 h-3.5 ${
+                          className={`w-3 h-3 ${
                             color.hex.toLowerCase() === '#ffffff' || color.hex.toLowerCase() === '#f8fafc'
-                              ? 'text-neutral-900'
+                              ? 'text-black'
                               : 'text-white'
                           }`}
                         />
@@ -121,16 +133,18 @@ export default function ProductCard({ product, onOpenDetails }: ProductCardProps
           )}
         </div>
 
-        {/* Price & CTA Button (Always at bottom) */}
-        <div className="pt-3 border-t border-neutral-100 flex items-center justify-between mt-auto">
+        {/* Price & Action Row (Always pinned to bottom) */}
+        <div className="pt-4 border-t border-white/[0.08] flex items-center justify-between mt-auto">
           <div>
-            <div className="text-[10px] text-neutral-400 uppercase font-semibold">Fiyat</div>
+            <div className="text-[10px] text-neutral-500 uppercase tracking-wider font-semibold">
+              Katalog Fiyatı
+            </div>
             <div className="flex items-baseline gap-2">
-              <span className="text-lg sm:text-xl font-black text-neutral-900">
+              <span className="text-lg sm:text-xl font-black bg-gradient-to-r from-white via-neutral-100 to-amber-200 bg-clip-text text-transparent">
                 {formatPrice(product.price)}
               </span>
               {product.oldPrice && product.oldPrice > product.price && (
-                <span className="text-xs text-neutral-400 line-through font-medium">
+                <span className="text-xs text-neutral-500 line-through font-medium">
                   {formatPrice(product.oldPrice)}
                 </span>
               )}
@@ -143,9 +157,10 @@ export default function ProductCard({ product, onOpenDetails }: ProductCardProps
               e.stopPropagation();
               onOpenDetails(product, selectedColor);
             }}
-            className="px-3.5 py-1.5 text-xs font-semibold text-neutral-900 bg-neutral-100 hover:bg-neutral-900 hover:text-white rounded-lg transition-colors duration-200"
+            className="group/btn inline-flex items-center gap-1.5 px-4 py-2 text-xs font-bold text-white bg-white/[0.08] hover:bg-amber-400 hover:text-black rounded-xl transition-all duration-200 border border-white/[0.08] hover:border-amber-400 shadow-sm"
           >
-            İncele
+            <span>İncele</span>
+            <ArrowRight className="w-3.5 h-3.5 group-hover/btn:translate-x-0.5 transition-transform" />
           </button>
         </div>
       </div>

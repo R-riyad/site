@@ -48,3 +48,4 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: 'Görsel yüklenirken bir hata oluştu: ' + (error as Error).message }, { status: 500 });
   }
 }
+

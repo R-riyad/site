@@ -14,9 +14,9 @@ const geistMono = localFont({
 });
 
 export const metadata: Metadata = {
-  title: 'Özel Ürün & Fiyat Kataloğu | Lüks Vitrin',
+  title: 'LÜKS VİTRİN | Yeni Nesil Özel Ürün Kataloğu & Fiyat Listesi',
   description:
-    'Süpürge, saat, gözlük, parfüm, elektronik aletler ve termos modellerimizi inceleyin. Güncel fiyat ve renk seçenekleri.',
+    'Süpürge, saat, gözlük, parfüm, elektronik ve termos modelleri. Üst düzey tasarım, canlı fiyat ve renk seçenekleri.',
 };
 
 export default function RootLayout({
@@ -25,9 +25,9 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="tr" className="scroll-smooth">
+    <html lang="tr" className="scroll-smooth dark">
       <body
-        className={`${geistSans.variable} ${geistMono.variable} antialiased bg-neutral-50 text-neutral-900 selection:bg-neutral-900 selection:text-white`}
+        className={`${geistSans.variable} ${geistMono.variable} antialiased bg-[#090a0f] text-neutral-100 selection:bg-amber-400 selection:text-black`}
       >
         {children}
       </body>

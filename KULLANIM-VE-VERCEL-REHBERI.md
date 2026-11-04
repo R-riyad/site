@@ -96,3 +96,4 @@ Bilgisayarınızdaki yönetim panelinden yeni ürünler ekledikten veya fiyatlar
 - `Yonetim-Paneli-Baslat.bat` -> Yönetim panelini açan Windows kısayolu.
 - `Siteyi-Goruntule.bat` -> Vitrin sitesini yerel olarak açan kısayol.
 - `Vercel-Guncelle.bat` -> Yapılan değişiklikleri Vercel'e gönderen kısayol.
+

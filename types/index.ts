@@ -39,3 +39,4 @@ export interface StoreData {
   categories: Category[];
   products: Product[];
 }
+
