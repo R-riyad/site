@@ -1,11 +1,20 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { getStoreData, saveStoreData } from '@/lib/products';
+import { getStoreDataAsync, saveStoreDataAsync } from '@/lib/products';
 import { Product, StoreData, SiteSettings } from '@/types';
+
+export const dynamic = 'force-dynamic';
+export const revalidate = 0;
 
 export async function GET() {
   try {
-    const data = getStoreData();
-    return NextResponse.json(data);
+    const data = await getStoreDataAsync();
+    return NextResponse.json(data, {
+      headers: {
+        'Cache-Control': 'no-store, no-cache, must-revalidate, proxy-revalidate',
+        'Pragma': 'no-cache',
+        'Expires': '0',
+      },
+    });
   } catch (error) {
     console.error('API GET error:', error);
     return NextResponse.json({ error: 'Veriler alınamadı' }, { status: 500 });
@@ -15,19 +24,19 @@ export async function GET() {
 export async function POST(req: NextRequest) {
   try {
     const body = await req.json();
-    const currentData = getStoreData();
+    const currentData = await getStoreDataAsync();
 
-    // Check if updating entire settings or a single product
+    // Check if updating entire settings
     if (body.type === 'update_settings') {
       currentData.settings = { ...currentData.settings, ...(body.settings as Partial<SiteSettings>) };
-      saveStoreData(currentData);
+      await saveStoreDataAsync(currentData);
       return NextResponse.json({ success: true, settings: currentData.settings });
     }
 
     if (body.type === 'sync_all') {
       // Full sync (e.g. from JSON import)
       if (body.data) {
-        saveStoreData(body.data as StoreData);
+        await saveStoreDataAsync(body.data as StoreData);
         return NextResponse.json({ success: true });
       }
     }
@@ -56,13 +65,13 @@ export async function POST(req: NextRequest) {
       currentData.products.unshift(newProduct);
     }
 
-    const saved = saveStoreData(currentData);
+    await saveStoreDataAsync(currentData);
 
     return NextResponse.json({
       success: true,
-      savedToFile: saved,
       product: existingIndex >= 0 ? currentData.products[existingIndex] : currentData.products[0],
       products: currentData.products,
+      settings: currentData.settings,
     });
   } catch (error) {
     return NextResponse.json({ error: 'Kaydetme hatası: ' + (error as Error).message }, { status: 500 });
@@ -78,7 +87,7 @@ export async function DELETE(req: NextRequest) {
       return NextResponse.json({ error: 'Ürün ID belirtilmedi' }, { status: 400 });
     }
 
-    const currentData = getStoreData();
+    const currentData = await getStoreDataAsync();
     const initialCount = currentData.products.length;
     currentData.products = currentData.products.filter((p) => p.id !== id);
 
@@ -86,9 +95,9 @@ export async function DELETE(req: NextRequest) {
       return NextResponse.json({ error: 'Ürün bulunamadı' }, { status: 404 });
     }
 
-    saveStoreData(currentData);
+    await saveStoreDataAsync(currentData);
 
-    return NextResponse.json({ success: true, message: 'Ürün başarıyla silindi' });
+    return NextResponse.json({ success: true, message: 'Ürün silindi', products: currentData.products });
   } catch (error) {
     console.error('API DELETE error:', error);
     return NextResponse.json({ error: 'Silme hatası' }, { status: 500 });

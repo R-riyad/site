@@ -26,6 +26,7 @@ import {
   Settings,
   AlertCircle,
   Eye,
+  CloudUpload,
 } from 'lucide-react';
 
 const PRESET_COLORS = [
@@ -58,6 +59,7 @@ export default function AdminPage() {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingProduct, setEditingProduct] = useState<Product | null>(null);
   const [isSaving, setIsSaving] = useState(false);
+  const [isPublishing, setIsPublishing] = useState(false);
   const [statusMessage, setStatusMessage] = useState<string | null>(null);
 
   // Form Fields
@@ -93,24 +95,44 @@ export default function AdminPage() {
   // Settings form state
   const [settingsForm, setSettingsForm] = useState<SiteSettings>(data.settings);
 
-  // Fetch real data on load
+  // Fetch real data on load with no-cache and localStorage sync
   useEffect(() => {
-    fetch('/api/products')
+    // 1. Try to load from localStorage first for instant state
+    if (typeof window !== 'undefined') {
+      try {
+        const localSaved = localStorage.getItem('vitrin_store_data');
+        if (localSaved) {
+          const parsed = JSON.parse(localSaved);
+          if (parsed && parsed.products) {
+            setData(parsed);
+            setSettingsForm(parsed.settings);
+          }
+        }
+      } catch (e) {
+        console.warn('LocalStorage read error:', e);
+      }
+    }
+
+    // 2. Fetch fresh data from API
+    fetch(`/api/products?t=${Date.now()}`, { cache: 'no-store' })
       .then((res) => res.json())
       .then((json) => {
         if (json && json.products) {
           setData(json);
           setSettingsForm(json.settings);
+          if (typeof window !== 'undefined') {
+            localStorage.setItem('vitrin_store_data', JSON.stringify(json));
+          }
         }
       })
       .catch((err) => console.log('Could not fetch /api/products:', err));
   }, []);
 
-  // Check auth
+  // Check auth - strictly validate against current saved adminPin
   const handleLogin = (e: React.FormEvent) => {
     e.preventDefault();
-    const correctPin = data.settings.adminPin || '1234';
-    if (pinInput === correctPin || pinInput === '1234') {
+    const activePin = (data.settings.adminPin || '1234').trim();
+    if (pinInput.trim() === activePin) {
       setIsAuthenticated(true);
       setPinError(false);
     } else {
@@ -252,16 +274,19 @@ export default function AdminPage() {
       const resData = await res.json();
 
       if (res.ok) {
-        setData((prev) => {
-          const exists = prev.products.some((p) => p.id === productPayload.id);
-          const updated = exists
-            ? prev.products.map((p) => (p.id === productPayload.id ? productPayload : p))
-            : [productPayload, ...prev.products];
-          return { ...prev, products: updated };
-        });
+        const updatedProducts = data.products.some((p) => p.id === productPayload.id)
+          ? data.products.map((p) => (p.id === productPayload.id ? productPayload : p))
+          : [productPayload, ...data.products];
+
+        const updatedData = { ...data, products: updatedProducts };
+        setData(updatedData);
+
+        if (typeof window !== 'undefined') {
+          localStorage.setItem('vitrin_store_data', JSON.stringify(updatedData));
+        }
 
         setIsModalOpen(false);
-        showToast(editingProduct ? 'Ürün güncellendi!' : 'Yeni ürün başarıyla eklendi!');
+        showToast(editingProduct ? 'Ürün güncellendi ve kaydedildi!' : 'Yeni ürün başarıyla eklendi!');
       } else {
         alert(resData.error || 'Ürün kaydedilemedi.');
       }
@@ -283,11 +308,14 @@ export default function AdminPage() {
         method: 'DELETE',
       });
       if (res.ok) {
-        setData((prev) => ({
-          ...prev,
-          products: prev.products.filter((p) => p.id !== id),
-        }));
-        showToast('Ürün silindi.');
+        const updatedProducts = data.products.filter((p) => p.id !== id);
+        const updatedData = { ...data, products: updatedProducts };
+        setData(updatedData);
+
+        if (typeof window !== 'undefined') {
+          localStorage.setItem('vitrin_store_data', JSON.stringify(updatedData));
+        }
+        showToast('Ürün başarıyla silindi.');
       } else {
         alert('Ürün silinirken hata oluştu.');
       }
@@ -296,9 +324,14 @@ export default function AdminPage() {
     }
   };
 
-  // Save Settings
+  // Save Settings (including PIN change)
   const handleSaveSettings = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (!settingsForm.adminPin || !settingsForm.adminPin.trim()) {
+      alert('Yönetim şifresi boş bırakılamaz.');
+      return;
+    }
+
     try {
       const res = await fetch('/api/products', {
         method: 'POST',
@@ -309,13 +342,36 @@ export default function AdminPage() {
         }),
       });
       if (res.ok) {
-        setData((prev) => ({ ...prev, settings: settingsForm }));
-        showToast('Site ayarları kaydedildi!');
+        const updatedData = { ...data, settings: settingsForm };
+        setData(updatedData);
+
+        if (typeof window !== 'undefined') {
+          localStorage.setItem('vitrin_store_data', JSON.stringify(updatedData));
+        }
+        showToast('Ayarlar ve yeni şifreniz başarıyla kaydedildi!');
       } else {
         alert('Ayarlar kaydedilemedi.');
       }
     } catch {
       alert('Bağlantı hatası');
+    }
+  };
+
+  // Publish to Vercel via Git
+  const handlePublishToVercel = async () => {
+    setIsPublishing(true);
+    try {
+      const res = await fetch('/api/publish', { method: 'POST' });
+      const result = await res.json();
+      if (result.success) {
+        showToast(result.message);
+      } else {
+        alert(result.message || 'Güncelleme gönderilemedi. Masaüstündeki Vercel-Guncelle.bat dosyasını çalıştırabilirsiniz.');
+      }
+    } catch {
+      alert('Yerel sunucuya ulaşılamadı. Masaüstündeki Vercel-Guncelle.bat dosyasını çift tıklayarak Vercel\'e gönderebilirsiniz.');
+    } finally {
+      setIsPublishing(false);
     }
   };
 
@@ -349,7 +405,10 @@ export default function AdminPage() {
           if (res.ok) {
             setData(parsed);
             if (parsed.settings) setSettingsForm(parsed.settings);
-            showToast('Tüm ürünler ve ayarlar JSON dosyasından yüklendi!');
+            if (typeof window !== 'undefined') {
+              localStorage.setItem('vitrin_store_data', JSON.stringify(parsed));
+            }
+            showToast('Tüm ürünler ve ayarlar JSON dosyasından başarıyla yüklendi!');
           }
         } else {
           alert('Geçersiz JSON formatı.');
@@ -365,7 +424,7 @@ export default function AdminPage() {
     setStatusMessage(msg);
     setTimeout(() => {
       setStatusMessage(null);
-    }, 4000);
+    }, 4500);
   };
 
   // Filtered products in Admin
@@ -380,6 +439,8 @@ export default function AdminPage() {
 
   // Login Screen
   if (!isAuthenticated) {
+    const currentActivePin = data.settings.adminPin || '1234';
+
     return (
       <div className="min-h-screen flex items-center justify-center p-4" style={{ background: 'var(--bg)', color: 'var(--text)' }}>
         <div
@@ -407,7 +468,7 @@ export default function AdminPage() {
                   setPinInput(e.target.value);
                   setPinError(false);
                 }}
-                placeholder="Şifre (Varsayılan: 1234)"
+                placeholder="PIN Şifreniz"
                 autoFocus
                 className="w-full text-center px-4 py-2.5 rounded-full border text-sm font-medium focus:outline-none focus:ring-1 transition"
                 style={{
@@ -419,7 +480,7 @@ export default function AdminPage() {
               {pinError && (
                 <p className="text-xs mt-2 flex items-center justify-center gap-1 text-red-500 font-medium">
                   <AlertCircle className="w-3.5 h-3.5" />
-                  Hatalı şifre. (Varsayılan: 1234)
+                  Hatalı şifre girdiniz.
                 </p>
               )}
             </div>
@@ -453,10 +514,10 @@ export default function AdminPage() {
       {/* Toast Notification */}
       {statusMessage && (
         <div
-          className="fixed bottom-6 right-6 z-50 px-4 py-2.5 rounded-full shadow-lg flex items-center gap-2 text-xs font-medium border"
+          className="fixed bottom-6 right-6 z-50 px-4 py-3 rounded-2xl shadow-xl flex items-center gap-2.5 text-xs font-medium border animate-in fade-in"
           style={{ background: 'var(--card)', borderColor: 'var(--border)', color: 'var(--text)' }}
         >
-          <Check className="w-4 h-4 text-emerald-600" />
+          <Check className="w-4 h-4 text-emerald-600 flex-shrink-0" />
           <span>{statusMessage}</span>
         </div>
       )}
@@ -483,6 +544,17 @@ export default function AdminPage() {
 
             {/* Quick Actions */}
             <div className="flex items-center gap-2">
+              <button
+                onClick={handlePublishToVercel}
+                disabled={isPublishing}
+                className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs rounded-full border transition hover:opacity-80"
+                style={{ borderColor: 'var(--accent)', color: 'var(--accent)' }}
+                title="Değişiklikleri GitHub ve Vercel'e gönderir"
+              >
+                <CloudUpload className="w-3.5 h-3.5" />
+                <span className="hidden sm:inline">{isPublishing ? 'Gönderiliyor...' : 'Vercel\'e Gönder'}</span>
+              </button>
+
               <Link
                 href="/"
                 target="_blank"
@@ -490,7 +562,7 @@ export default function AdminPage() {
                 style={{ borderColor: 'var(--border)', color: 'var(--muted)' }}
               >
                 <Eye className="w-3.5 h-3.5" />
-                <span>Vitrin</span>
+                <span>Canlı Vitrin</span>
               </Link>
 
               <button
@@ -538,7 +610,7 @@ export default function AdminPage() {
               }}
             >
               <Settings className="w-3.5 h-3.5" />
-              <span>Ayarlar</span>
+              <span>Ayarlar & Şifre</span>
             </button>
           </div>
         </div>
@@ -699,9 +771,9 @@ export default function AdminPage() {
         ) : (
           /* SETTINGS TAB */
           <div className="max-w-xl rounded-xl p-6 shadow-sm" style={{ background: 'var(--card)', border: '1px solid var(--border)' }}>
-            <h2 className="text-base font-medium mb-1" style={{ color: 'var(--text)' }}>Site & İletişim Ayarları</h2>
+            <h2 className="text-base font-medium mb-1" style={{ color: 'var(--text)' }}>Site & Şifre Ayarları</h2>
             <p className="text-xs mb-6" style={{ color: 'var(--muted)' }}>
-              Başlık ve WhatsApp sipariş numarasını buradan güncelleyebilirsiniz.
+              Site başlığı, WhatsApp numarası ve yönetim giriş şifrenizi buradan güncelleyin.
             </p>
 
             <form onSubmit={handleSaveSettings} className="space-y-4 text-xs">
@@ -733,7 +805,7 @@ export default function AdminPage() {
 
               <div>
                 <label className="block font-medium mb-1" style={{ color: 'var(--text)' }}>
-                  WhatsApp Numarası
+                  WhatsApp Danışma Numarası
                 </label>
                 <div className="relative">
                   <Phone className="w-3.5 h-3.5 absolute left-3 top-1/2 -translate-y-1/2" style={{ color: 'var(--muted)' }} />
@@ -750,15 +822,19 @@ export default function AdminPage() {
 
               <div>
                 <label className="block font-medium mb-1" style={{ color: 'var(--text)' }}>
-                  Yönetici PIN Şifresi
+                  Yönetim Paneli Giriş Şifresi (PIN)
                 </label>
                 <input
                   type="text"
                   value={settingsForm.adminPin}
                   onChange={(e) => setSettingsForm({ ...settingsForm, adminPin: e.target.value })}
-                  className="w-full px-3 py-2 rounded-lg border focus:outline-none"
+                  placeholder="Yeni şifrenizi girin"
+                  className="w-full px-3 py-2 rounded-lg border focus:outline-none font-mono"
                   style={{ background: 'var(--bg)', borderColor: 'var(--border)', color: 'var(--text)' }}
                 />
+                <p className="text-[11px] mt-1" style={{ color: 'var(--muted)' }}>
+                  Değiştirdikten sonra "Ayarları Kaydet" butonuna basınız. Girişte bu şifre istenecektir.
+                </p>
               </div>
 
               <div className="pt-4 flex items-center justify-between" style={{ borderTop: '1px solid var(--border)' }}>
@@ -767,7 +843,7 @@ export default function AdminPage() {
                   className="px-5 py-2 rounded-full text-xs font-medium text-white transition hover:opacity-90 shadow-sm"
                   style={{ background: 'var(--accent)' }}
                 >
-                  Ayarları Kaydet
+                  Ayarları & Şifreyi Kaydet
                 </button>
 
                 <label className="inline-flex items-center gap-1.5 px-3 py-2 rounded-full border text-xs cursor-pointer transition hover:opacity-70" style={{ borderColor: 'var(--border)', color: 'var(--muted)' }}>

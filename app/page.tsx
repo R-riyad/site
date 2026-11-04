@@ -21,11 +21,30 @@ export default function HomePage() {
   const [showScrollTop, setShowScrollTop] = useState(false);
 
   useEffect(() => {
-    fetch('/api/products')
+    // 1. Try to load from localStorage first for instant display
+    if (typeof window !== 'undefined') {
+      try {
+        const localSaved = localStorage.getItem('vitrin_store_data');
+        if (localSaved) {
+          const parsed = JSON.parse(localSaved);
+          if (parsed && parsed.products) {
+            setData(parsed);
+          }
+        }
+      } catch (e) {
+        console.warn('LocalStorage read error:', e);
+      }
+    }
+
+    // 2. Fresh fetch without browser cache
+    fetch(`/api/products?t=${Date.now()}`, { cache: 'no-store' })
       .then((res) => res.json())
       .then((json) => {
         if (json && json.products) {
           setData(json);
+          if (typeof window !== 'undefined') {
+            localStorage.setItem('vitrin_store_data', JSON.stringify(json));
+          }
         }
       })
       .catch((err) => console.log('Using local fallback:', err));
