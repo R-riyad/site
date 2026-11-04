@@ -12,8 +12,14 @@ let inMemoryStore: StoreData = defaultData as StoreData;
 
 // Check if Upstash Redis / Vercel KV is configured in environment
 function getRedisClient() {
-  const url = process.env.UPSTASH_REDIS_REST_URL || process.env.KV_REST_API_URL;
-  const token = process.env.UPSTASH_REDIS_REST_TOKEN || process.env.KV_REST_API_TOKEN;
+  const url =
+    process.env.UPSTASH_REDIS_REST_URL ||
+    process.env.KV_REST_API_URL ||
+    process.env.STORAGE_REST_API_URL;
+  const token =
+    process.env.UPSTASH_REDIS_REST_TOKEN ||
+    process.env.KV_REST_API_TOKEN ||
+    process.env.STORAGE_REST_API_TOKEN;
 
   if (url && token) {
     try {
@@ -35,6 +41,14 @@ export async function getStoreDataAsync(): Promise<StoreData> {
         const parsed = typeof data === 'string' ? JSON.parse(data) : data;
         inMemoryStore = parsed as StoreData;
         return inMemoryStore;
+      } else {
+        // First run with newly created Redis store: seed default data!
+        try {
+          await redis.set(REDIS_KEY, JSON.stringify(defaultData));
+        } catch (seedErr) {
+          console.warn('Could not seed Redis:', seedErr);
+        }
+        return defaultData as StoreData;
       }
     } catch (err) {
       console.warn('Redis get failed, falling back to file/memory:', err);
