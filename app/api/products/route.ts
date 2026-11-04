@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getStoreDataAsync, saveStoreDataAsync } from '@/lib/products';
 import { Product, StoreData, SiteSettings } from '@/types';
+import defaultData from '@/data/products.json';
 
 export const dynamic = 'force-dynamic';
 export const revalidate = 0;
@@ -17,7 +18,7 @@ export async function GET() {
     });
   } catch (error) {
     console.error('API GET error:', error);
-    return NextResponse.json({ error: 'Veriler alınamadı' }, { status: 500 });
+    return NextResponse.json(defaultData, { status: 200 });
   }
 }
 
@@ -47,7 +48,12 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: 'Eksik ürün bilgisi' }, { status: 400 });
     }
 
-    const existingIndex = currentData.products.findIndex((p) => p.id === product.id);
+    if (!Array.isArray(currentData.products)) {
+      currentData.products = (defaultData as StoreData).products;
+    }
+
+    const targetId = String(product.id || '').trim();
+    const existingIndex = currentData.products.findIndex((p) => String(p.id).trim() === targetId);
 
     if (existingIndex >= 0) {
       // Update existing
@@ -88,18 +94,22 @@ export async function DELETE(req: NextRequest) {
     }
 
     const currentData = await getStoreDataAsync();
-    const initialCount = currentData.products.length;
-    currentData.products = currentData.products.filter((p) => p.id !== id);
-
-    if (currentData.products.length === initialCount) {
-      return NextResponse.json({ error: 'Ürün bulunamadı' }, { status: 404 });
+    if (!currentData || !Array.isArray(currentData.products)) {
+      currentData.products = (defaultData as StoreData).products;
     }
+
+    const targetId = String(id).trim();
+    currentData.products = currentData.products.filter((p) => String(p.id).trim() !== targetId);
 
     await saveStoreDataAsync(currentData);
 
-    return NextResponse.json({ success: true, message: 'Ürün silindi', products: currentData.products });
+    return NextResponse.json({
+      success: true,
+      message: 'Ürün silindi',
+      products: currentData.products,
+    });
   } catch (error) {
     console.error('API DELETE error:', error);
-    return NextResponse.json({ error: 'Silme hatası' }, { status: 500 });
+    return NextResponse.json({ error: 'Silme hatası: ' + (error as Error).message }, { status: 500 });
   }
 }

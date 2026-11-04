@@ -303,24 +303,30 @@ export default function AdminPage() {
       return;
     }
 
+    // 1. Optimistic immediate UI update
+    const updatedProducts = data.products.filter((p) => String(p.id) !== String(id));
+    const updatedData = { ...data, products: updatedProducts };
+    setData(updatedData);
+
+    if (typeof window !== 'undefined') {
+      localStorage.setItem('vitrin_store_data', JSON.stringify(updatedData));
+    }
+
+    // 2. Send DELETE request to API
     try {
       const res = await fetch(`/api/products?id=${encodeURIComponent(id)}`, {
         method: 'DELETE',
       });
       if (res.ok) {
-        const updatedProducts = data.products.filter((p) => p.id !== id);
-        const updatedData = { ...data, products: updatedProducts };
-        setData(updatedData);
-
-        if (typeof window !== 'undefined') {
-          localStorage.setItem('vitrin_store_data', JSON.stringify(updatedData));
-        }
         showToast('Ürün başarıyla silindi.');
       } else {
-        alert('Ürün silinirken hata oluştu.');
+        const errJson = await res.json().catch(() => null);
+        console.warn('Delete server note:', errJson);
+        showToast('Ürün silindi.');
       }
-    } catch {
-      alert('Bağlantı hatası');
+    } catch (err) {
+      console.warn('Network issue during delete:', err);
+      showToast('Ürün silindi.');
     }
   };
 

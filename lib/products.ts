@@ -10,6 +10,23 @@ const REDIS_KEY = 'vitrin_store_data';
 // In-memory cache
 let inMemoryStore: StoreData = defaultData as StoreData;
 
+// Safely unwrap data that might be double-stringified or plain object
+export function parseStoreData(val: any): StoreData | null {
+  if (!val) return null;
+  let result = val;
+  while (typeof result === 'string') {
+    try {
+      result = JSON.parse(result);
+    } catch {
+      break;
+    }
+  }
+  if (result && typeof result === 'object' && Array.isArray(result.products)) {
+    return result as StoreData;
+  }
+  return null;
+}
+
 // Check if Upstash Redis / Vercel KV is configured in environment
 function getRedisClient() {
   const url =
@@ -36,15 +53,15 @@ export async function getStoreDataAsync(): Promise<StoreData> {
   const redis = getRedisClient();
   if (redis) {
     try {
-      const data = await redis.get(REDIS_KEY);
-      if (data) {
-        const parsed = typeof data === 'string' ? JSON.parse(data) : data;
-        inMemoryStore = parsed as StoreData;
+      const raw = await redis.get(REDIS_KEY);
+      const parsed = parseStoreData(raw);
+      if (parsed) {
+        inMemoryStore = parsed;
         return inMemoryStore;
       } else {
-        // First run with newly created Redis store: seed default data!
+        // Auto-seed Redis if empty
         try {
-          await redis.set(REDIS_KEY, JSON.stringify(defaultData));
+          await redis.set(REDIS_KEY, defaultData);
         } catch (seedErr) {
           console.warn('Could not seed Redis:', seedErr);
         }
@@ -59,9 +76,11 @@ export async function getStoreDataAsync(): Promise<StoreData> {
   try {
     if (fs.existsSync(DATA_FILE_PATH)) {
       const fileContent = fs.readFileSync(DATA_FILE_PATH, 'utf-8');
-      const parsed = JSON.parse(fileContent);
-      inMemoryStore = parsed;
-      return parsed;
+      const parsed = parseStoreData(fileContent);
+      if (parsed) {
+        inMemoryStore = parsed;
+        return inMemoryStore;
+      }
     }
   } catch (error) {
     console.warn('Could not read from data/products.json:', error);
@@ -74,9 +93,11 @@ export function getStoreData(): StoreData {
   try {
     if (fs.existsSync(DATA_FILE_PATH)) {
       const fileContent = fs.readFileSync(DATA_FILE_PATH, 'utf-8');
-      const parsed = JSON.parse(fileContent);
-      inMemoryStore = parsed;
-      return parsed;
+      const parsed = parseStoreData(fileContent);
+      if (parsed) {
+        inMemoryStore = parsed;
+        return inMemoryStore;
+      }
     }
   } catch (error) {
     console.warn('Sync read from data/products.json failed:', error);
@@ -88,11 +109,11 @@ export async function saveStoreDataAsync(data: StoreData): Promise<boolean> {
   inMemoryStore = data;
   let saved = false;
 
-  // 1. Save to Redis / Vercel KV if available
+  // 1. Save to Redis / Vercel KV if available (pass raw object to avoid double-stringification)
   const redis = getRedisClient();
   if (redis) {
     try {
-      await redis.set(REDIS_KEY, JSON.stringify(data));
+      await redis.set(REDIS_KEY, data);
       saved = true;
     } catch (err) {
       console.warn('Redis set failed:', err);
