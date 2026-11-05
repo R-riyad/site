@@ -113,10 +113,29 @@ export async function saveStoreDataAsync(data: StoreData): Promise<boolean> {
   const redis = getRedisClient();
   if (redis) {
     try {
-      await redis.set(REDIS_KEY, data);
+      // Check estimated data size — Upstash free tier has 1MB value limit
+      const dataStr = JSON.stringify(data);
+      const dataSizeMB = new TextEncoder().encode(dataStr).length / (1024 * 1024);
+      
+      if (dataSizeMB > 0.9) {
+        console.warn(`Data size is ${dataSizeMB.toFixed(2)}MB — close to or exceeding Redis limit`);
+        // Strip base64 image data that's too large to save space
+        const trimmedData = JSON.parse(dataStr) as StoreData;
+        trimmedData.products = trimmedData.products.map(p => {
+          if (p.image && p.image.startsWith('data:') && p.image.length > 200_000) {
+            console.warn(`Trimming large base64 image for product: ${p.name}`);
+            return { ...p, image: '' };
+          }
+          return p;
+        });
+        await redis.set(REDIS_KEY, trimmedData);
+      } else {
+        await redis.set(REDIS_KEY, data);
+      }
       saved = true;
     } catch (err) {
-      console.warn('Redis set failed:', err);
+      console.error('Redis set failed:', err);
+      // Don't return false yet — try filesystem fallback
     }
   }
 
@@ -133,7 +152,7 @@ export async function saveStoreDataAsync(data: StoreData): Promise<boolean> {
     console.warn('Filesystem write skipped (read-only environment)');
   }
 
-  return saved || true;
+  return saved;
 }
 
 export function saveStoreData(data: StoreData): boolean {
