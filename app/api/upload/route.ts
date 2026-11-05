@@ -1,7 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { put } from '@vercel/blob';
 
-export const runtime = 'edge'; // Edge runtime for faster uploads
+export const dynamic = 'force-dynamic';
 
 export async function POST(req: NextRequest) {
   try {
@@ -20,12 +19,16 @@ export async function POST(req: NextRequest) {
       );
     }
 
+    const buffer = Buffer.from(await file.arrayBuffer());
+
     // Try Vercel Blob first (works on Vercel with BLOB_READ_WRITE_TOKEN)
     if (process.env.BLOB_READ_WRITE_TOKEN) {
       try {
-        const blob = await put(file.name, file, {
+        const { put } = require('@vercel/blob');
+        const blob = await put(file.name, buffer, {
           access: 'public',
           addRandomSuffix: true,
+          contentType: file.type || 'image/jpeg',
         });
 
         return NextResponse.json({
@@ -38,21 +41,38 @@ export async function POST(req: NextRequest) {
       }
     }
 
-    // Fallback: base64 Data URL (for local dev or if Blob not configured)
-    const buffer = await file.arrayBuffer();
-    const base64Data = btoa(
-      new Uint8Array(buffer).reduce((data, byte) => data + String.fromCharCode(byte), '')
-    );
+    // Fallback: Try local filesystem (works on localhost)
+    try {
+      const fs = require('fs');
+      const path = require('path');
+      const ext = path.extname(file.name) || '.jpg';
+      const fileName = `${Date.now()}_${Math.random().toString(36).substring(2, 7)}${ext}`;
+      const uploadsDir = path.join(process.cwd(), 'public', 'uploads');
+
+      if (!fs.existsSync(uploadsDir)) {
+        fs.mkdirSync(uploadsDir, { recursive: true });
+      }
+
+      fs.writeFileSync(path.join(uploadsDir, fileName), buffer);
+
+      return NextResponse.json({
+        success: true,
+        url: `/uploads/${fileName}`,
+        type: 'local_file',
+      });
+    } catch (fsError) {
+      console.warn('Filesystem write failed:', fsError);
+    }
+
+    // Last fallback: base64 Data URL
+    const base64Data = buffer.toString('base64');
     const mimeType = file.type || 'image/jpeg';
     const dataUrl = `data:${mimeType};base64,${base64Data}`;
 
-    // Warn if base64 is very large (will cause issues with Redis)
+    // Reject if base64 is too large for Redis storage
     if (dataUrl.length > 500_000) {
       return NextResponse.json(
-        {
-          error:
-            'Görsel çok büyük. Lütfen daha küçük bir görsel seçin veya görseli sıkıştırın. Alternatif olarak görsel URL adresi kullanabilirsiniz.',
-        },
+        { error: 'Görsel çok büyük. Lütfen daha küçük bir görsel seçin veya bir görsel URL adresi girin.' },
         { status: 400 }
       );
     }
