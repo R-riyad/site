@@ -25,7 +25,7 @@ const common = ['--config', configPath, '--persist-to', join(temp, 'state')];
 const env = { ...process.env, WRANGLER_SEND_METRICS: 'false', CLOUDFLARE_LOAD_DEV_VARS_FROM_DOT_ENV: 'false' };
 delete env.CLOUDFLARE_API_TOKEN;
 delete env.CLOUDFLARE_ACCOUNT_ID;
-execFileSync(process.execPath, [wrangler, 'd1', 'migrations', 'apply', 'STORE', '--local', '--yes', ...common], { cwd: root, env, stdio: 'pipe' });
+execFileSync(process.execPath, [wrangler, 'd1', 'migrations', 'apply', 'STORE', '--local', ...common], { cwd: root, env, stdio: 'pipe' });
 
 let child;
 let logs = '';
