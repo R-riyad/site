@@ -25,6 +25,7 @@ export async function POST(req: NextRequest) {
     const key = `${crypto.randomUUID()}.${extension}`;
     const bytes = new Uint8Array(await file.arrayBuffer());
     const env = await getCloudflareEnv();
+    if (env && !env.PRODUCT_IMAGES) throw new Error('PRODUCT_IMAGES storage binding is missing');
 
     if (env?.PRODUCT_IMAGES) {
       await env.PRODUCT_IMAGES.put(key, bytes, { httpMetadata: { contentType: file.type, cacheControl: 'public, max-age=31536000, immutable' } });

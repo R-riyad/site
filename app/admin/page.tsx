@@ -304,11 +304,7 @@ export default function AdminPage() {
       const resData = await res.json();
 
       if (res.ok) {
-        const updatedProducts = data.products.some((p) => p.id === productPayload.id)
-          ? data.products.map((p) => (p.id === productPayload.id ? productPayload : p))
-          : [productPayload, ...data.products];
-
-        const updatedData = { ...data, products: updatedProducts };
+        const updatedData = { ...data, products: resData.products, settings: resData.settings };
         setData(updatedData);
 
         if (typeof window !== 'undefined') {
@@ -333,30 +329,18 @@ export default function AdminPage() {
       return;
     }
 
-    // 1. Optimistic immediate UI update
-    const updatedProducts = data.products.filter((p) => String(p.id) !== String(id));
-    const updatedData = { ...data, products: updatedProducts };
-    setData(updatedData);
-
-    if (typeof window !== 'undefined') {
-      localStorage.setItem('vitrin_store_data', JSON.stringify(updatedData));
-    }
-
-    // 2. Send DELETE request to API
     try {
       const res = await fetch(`/api/products?id=${encodeURIComponent(id)}`, {
         method: 'DELETE',
       });
-      if (res.ok) {
-        showToast('Ürün başarıyla silindi.');
-      } else {
-        const errJson = await res.json().catch(() => null);
-        console.warn('Delete server note:', errJson);
-        showToast('Ürün silindi.');
-      }
-    } catch (err) {
-      console.warn('Network issue during delete:', err);
-      showToast('Ürün silindi.');
+      const result = await res.json();
+      if (!res.ok) throw new Error(result.error || 'Ürün silinemedi.');
+      const updatedData = { ...data, products: result.products };
+      setData(updatedData);
+      localStorage.setItem('vitrin_store_data', JSON.stringify(updatedData));
+      showToast('Ürün başarıyla silindi.');
+    } catch (error) {
+      alert(error instanceof Error ? error.message : 'Bağlantı kurulamadı; ürün silinemedi.');
     }
   };
 

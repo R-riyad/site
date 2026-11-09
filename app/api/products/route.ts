@@ -19,7 +19,7 @@ export async function GET() {
     return NextResponse.json(data, { headers: noCacheHeaders });
   } catch (error) {
     console.error('API GET error:', error);
-    return NextResponse.json(defaultData, { status: 200, headers: noCacheHeaders });
+    return NextResponse.json({ error: 'Ürünler şu anda okunamıyor. Lütfen tekrar deneyin.' }, { status: 503, headers: noCacheHeaders });
   }
 }
 
@@ -53,7 +53,8 @@ export async function POST(req: NextRequest) {
 
     if (body.type === 'sync_all') {
       // Full sync (e.g. from JSON import)
-      if (body.data) {
+      if (body.data && Array.isArray(body.data.products) && Array.isArray(body.data.categories)
+          && body.data.settings && typeof body.data.settings === 'object') {
         const saved = await saveStoreDataAsync(body.data as StoreData);
         if (!saved) {
           return NextResponse.json(
@@ -63,6 +64,7 @@ export async function POST(req: NextRequest) {
         }
         return NextResponse.json({ success: true }, { headers: noCacheHeaders });
       }
+      return NextResponse.json({ error: 'Geçerli bir ürün yedeği seçin.' }, { status: 400, headers: noCacheHeaders });
     }
 
     // Saving or updating a product

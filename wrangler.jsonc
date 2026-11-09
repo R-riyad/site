@@ -1,6 +1,8 @@
 {
   "$schema": "node_modules/wrangler/config-schema.json",
   "name": "tekin-magaza",
+  "workers_dev": true,
+  "preview_urls": false,
   "main": ".open-next/worker.js",
   "compatibility_date": "2026-11-09",
   "compatibility_flags": ["nodejs_compat"],

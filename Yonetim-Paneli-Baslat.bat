@@ -1,4 +1,5 @@
 @echo off
+cd /d "%~dp0"
 chcp 65001 > nul
 title Vitrin Yonetim Paneli Baslatiliyor...
 echo ========================================================
@@ -8,8 +9,8 @@ echo.
 echo 1. Sunucu başlatılıyor...
 echo 2. Tarayıcınızda Yönetim Paneli açılacak.
 echo.
-echo Panel Giriş Şifreniz: 1234
-echo (Bu şifreyi panel içerisindeki 'Ayarlar' sekmesinden değiştirebilirsiniz)
+echo Yonetici parolasi .dev.vars dosyasindaki ADMIN_PIN degeridir.
+echo Ilk kurulum icin README.md dosyasindaki adimlari uygulayin.
 echo.
 echo Panel penceresini kapatmak istediğinizde bu siyah ekranı kapatabilirsiniz.
 echo ========================================================

@@ -13,6 +13,7 @@
 /.next/
 /.open-next/
 /.wrangler/
+/.worker-dry-run/
 /cloudflare-env.d.ts
 /.dev.vars
 /out/

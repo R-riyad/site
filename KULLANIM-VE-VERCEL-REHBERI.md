@@ -6,7 +6,12 @@
 
 ## Yönetim paneli
 
-Varsayılan giriş PIN'i `1234`'tür. Panelden ürün ekleyip düzenleyebilir, görsel yükleyebilir, site bilgilerini ve WhatsApp numarasını güncelleyebilir, ürün verilerini JSON olarak yedekleyebilirsiniz. Görseller `public/uploads` altında, ürünler ve ayarlar `data/products.json` içinde tutulur.
+Varsayılan parola yoktur. Yönetici parolası `ADMIN_PIN` ve oturum anahtarı
+`ADMIN_SESSION_SECRET` ile sunucuda tanımlanır. Panelden ürün ekleyip düzenleyebilir,
+görsel yükleyebilir, fiyat ve stokta var/yok bilgisini değiştirebilirsiniz.
+Cloudflare yayınında ürünler D1, görseller R2 içinde tutulur. JSON yedeği görsel
+dosyalarını içermez; görseller ayrıca yedeklenmelidir. Güncel yayın adımları
+[DEPLOYMENT.md](DEPLOYMENT.md) dosyasındadır.
 
 ## Vercel bağlantısı
 

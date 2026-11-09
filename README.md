@@ -4,12 +4,15 @@ Next.js ile hazırlanmış, ürün kataloğu ve yönetim paneli içeren mağaza 
 
 ## Yerelde çalıştırma
 
-1. Node.js LTS kurulu olmalı.
+1. Node.js 22 veya daha yeni desteklenen bir LTS sürümü kurulu olmalı.
 2. Proje klasöründe terminal açın ve `npm install` komutunu çalıştırın.
 3. `npm run dev` komutuyla siteyi başlatın.
 4. Vitrin: [http://localhost:3000](http://localhost:3000) · Yönetim: [http://localhost:3000/admin](http://localhost:3000/admin)
 
-Yerel geliştirmede ürün verileri `data/products.json` dosyasına yazılır; Cloudflare'da D1 kullanılır. Yüklenen görseller yerelde `public/uploads`, yayında R2 içinde saklanır. Yönetim paneli ürün ekleme, silme, ayar değiştirme ve görsel yükleme uçları sunucu tarafı oturumuyla korunur.
+Cloudflare yerel geliştirme bağlantıları etkin olduğunda ürünler yerel D1'e,
+görseller yerel R2'ye (`.wrangler/state`) yazılır. Cloudflare bağlamı bulunmayan
+yerel çalıştırmada JSON/dosya depolaması kullanılır. Yayında gerçek D1/R2 kullanılır.
+Yönetim paneli ürün ekleme, silme, ayar değiştirme ve görsel yükleme uçları sunucu tarafı oturumuyla korunur.
 
 ## Yerel yönetici girişi
 
@@ -19,6 +22,10 @@ Yerel geliştirmede ürün verileri `data/products.json` dosyasına yazılır; C
 4. `npm run dev` ile geliştirme sunucusunu başlatın.
 
 ## Cloudflare dağıtımı
+
+Ücretsiz `workers.dev` deneme yayını ve Linux GitHub Actions kontrolleri için
+[DEPLOYMENT.md](DEPLOYMENT.md) dosyasını okuyun. OpenNext'in Windows paketleme
+sorunlarını aşmak için derleme GitHub üzerinde yapılır. Özel domain gerekmez.
 
 OpenNext, Workers ve Wrangler bağımlılıkları hazırdır. Cloudflare hesabında `tekin-store` adlı D1 veritabanı ile `tekin-product-images` adlı R2 bucket oluşturulmalı; D1 kimliği `wrangler.jsonc` içine yazılmalıdır. Ardından D1 migration'ları `npx wrangler d1 migrations apply STORE --remote` ile uygulanmalı ve `ADMIN_PIN` ile güçlü bir `ADMIN_SESSION_SECRET` Worker secret olarak eklenmelidir (`npx wrangler secret put ADMIN_PIN`, `npx wrangler secret put ADMIN_SESSION_SECRET`). Son olarak `npm run deploy` dağıtımı yapar. Worker'ın ücretsiz plan limitleri aşılırsa Cloudflare isteklere limit uygulayabilir; kullanımı panelden takip edin.
 

@@ -1,0 +1,64 @@
+name: Cloudflare Worker checks and optional publish
+
+on:
+  push:
+    branches: [main, 'codex/**']
+  pull_request:
+  workflow_dispatch:
+    inputs:
+      publish:
+        description: Publish to the configured Cloudflare account after checks
+        type: boolean
+        default: false
+
+permissions:
+  contents: read
+
+concurrency:
+  group: cloudflare-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  worker:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    env:
+      NEXT_TELEMETRY_DISABLED: '1'
+      WRANGLER_SEND_METRICS: 'false'
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+      - run: npm ci --no-audit --no-fund
+      - run: npm run build:worker
+      - run: npm run check:worker
+      - run: npm run test:worker
+      - uses: actions/upload-artifact@v4
+        with:
+          name: cloudflare-worker
+          path: |
+            .open-next/
+            .worker-dry-run/
+          include-hidden-files: true
+          retention-days: 7
+      - name: Configure the selected production database
+        if: github.event_name == 'workflow_dispatch' && inputs.publish
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+          CF_D1_DATABASE_ID: ${{ vars.CF_D1_DATABASE_ID }}
+        run: node scripts/configure-cloudflare.mjs
+      - name: Apply database migrations
+        if: github.event_name == 'workflow_dispatch' && inputs.publish
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+        run: npx wrangler d1 migrations apply STORE --remote
+      - name: Publish the checked Worker
+        if: github.event_name == 'workflow_dispatch' && inputs.publish
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+        run: npx opennextjs-cloudflare deploy
