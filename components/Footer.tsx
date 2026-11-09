@@ -3,6 +3,7 @@
 import React from 'react';
 import Link from 'next/link';
 import { SiteSettings, Category } from '@/types';
+import BrandLogo from '@/components/BrandLogo';
 
 interface FooterProps {
   settings: SiteSettings;
@@ -19,11 +20,9 @@ export default function Footer({ settings, categories, onSelectCategory }: Foote
         <div className="grid grid-cols-1 md:grid-cols-3 gap-10 mb-12">
           {/* Brand */}
           <div>
-            <h3 className="font-medium text-base mb-3" style={{ color: 'var(--text)' }}>
-              {settings.siteName || 'VİTRİN'}
-            </h3>
+            <BrandLogo className="mb-4" />
             <p className="text-xs leading-relaxed" style={{ color: 'var(--muted)' }}>
-              Seçkin ürünler, şeffaf fiyatlar. Detaylı bilgi ve sipariş için WhatsApp üzerinden bize ulaşabilirsiniz.
+              Ürünler ve sipariş hakkında bilgi için bize ulaşın.
             </p>
           </div>
 
@@ -77,7 +76,7 @@ export default function Footer({ settings, categories, onSelectCategory }: Foote
 
         {/* Bottom */}
         <div className="pt-6 flex flex-col sm:flex-row items-center justify-between text-xs gap-3" style={{ borderTop: '1px solid var(--border)', color: 'var(--muted)' }}>
-          <p>© {new Date().getFullYear()} {settings.siteName || 'VİTRİN'}</p>
+          <p>© {new Date().getFullYear()} {settings.siteName || 'TEKİN'}</p>
           <p>Dijital Ürün Kataloğu</p>
         </div>
       </div>

@@ -14,25 +14,27 @@ export default function ProductCard({ product, onOpenDetails }: ProductCardProps
     product.colors && product.colors.length > 0 ? product.colors[0] : undefined
   );
   const [imageError, setImageError] = useState(false);
+  const visibleImage = selectedColor?.image || product.image;
 
   const handleColorClick = (e: React.MouseEvent, color: ProductColor) => {
     e.stopPropagation();
     setSelectedColor(color);
+    setImageError(false);
   };
 
   return (
     <div
       onClick={() => onOpenDetails(product, selectedColor)}
-      className="group cursor-pointer"
+      className="group cursor-pointer rounded-2xl p-2 pb-4 transition duration-300 hover:-translate-y-1 hover:shadow-[0_18px_45px_rgba(37,27,19,0.09)]"
     >
       {/* Image */}
-      <div className="relative aspect-[4/5] w-full rounded-lg overflow-hidden mb-3" style={{ background: '#f0ece6' }}>
-        {product.image && !imageError ? (
+      <div className="relative aspect-[4/5] w-full rounded-xl overflow-hidden mb-4" style={{ background: '#eee9e2' }}>
+        {visibleImage && !imageError ? (
           <img
-            src={product.image}
-            alt={product.name}
+            src={visibleImage}
+            alt={`${product.name}${selectedColor?.name ? ` – ${selectedColor.name}` : ''}`}
             onError={() => setImageError(true)}
-            className="w-full h-full object-cover object-center group-hover:scale-[1.03] transition-transform duration-700 ease-out"
+            className="w-full h-full object-cover object-center group-hover:scale-[1.05] transition-transform duration-700 ease-out"
           />
         ) : (
           <div className="flex flex-col items-center justify-center h-full" style={{ color: 'var(--muted)' }}>
@@ -72,6 +74,7 @@ export default function ProductCard({ product, onOpenDetails }: ProductCardProps
                   type="button"
                   onClick={(e) => handleColorClick(e, color)}
                   title={color.name}
+                  aria-label={`${color.name} rengini göster`}
                   className="relative w-3.5 h-3.5 rounded-full transition-all"
                   style={{
                     backgroundColor: color.hex,

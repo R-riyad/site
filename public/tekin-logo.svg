@@ -1,0 +1,7 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 260 64" fill="none">
+  <rect x="1" y="1" width="62" height="62" rx="20" fill="#261F1A"/>
+  <path d="M17 21h30M32 21v28M23 49h18" stroke="#D9B793" stroke-width="3.2" stroke-linecap="round"/>
+  <path d="m49 11 1.2 3.4 3.4 1.2-3.4 1.2-1.2 3.4-1.2-3.4-3.4-1.2 3.4-1.2L49 11Z" fill="#F1DDC8"/>
+  <text x="80" y="35" fill="#261F1A" font-family="Arial, sans-serif" font-size="26" font-weight="600" letter-spacing="5">TEKİN</text>
+  <text x="81" y="52" fill="#898177" font-family="Arial, sans-serif" font-size="8" font-weight="500" letter-spacing="3">ÖZENLE SEÇİLDİ</text>
+</svg>

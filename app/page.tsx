@@ -2,20 +2,19 @@
 
 import React, { useState, useEffect, useMemo } from 'react';
 import Navbar from '@/components/Navbar';
-import CategoryTabs from '@/components/CategoryTabs';
+import CategoryShowcase, { CATEGORY_GROUPS } from '@/components/CategoryShowcase';
 import ProductCard from '@/components/ProductCard';
 import ProductModal from '@/components/ProductModal';
 import HeroBanner from '@/components/HeroBanner';
 import Footer from '@/components/Footer';
 import { StoreData, Product, ProductColor } from '@/types';
 import defaultStoreData from '@/data/products.json';
-import { ArrowUp, Phone } from 'lucide-react';
+import { ArrowUp, Phone, Sparkles } from 'lucide-react';
 
 export default function HomePage() {
   const [data, setData] = useState<StoreData>(defaultStoreData as StoreData);
   const [selectedCategory, setSelectedCategory] = useState<string>('all');
   const [searchQuery, setSearchQuery] = useState<string>('');
-  const [viewMode, setViewMode] = useState<'sections' | 'grid'>('sections');
   const [modalProduct, setModalProduct] = useState<Product | null>(null);
   const [modalInitialColor, setModalInitialColor] = useState<ProductColor | undefined>(undefined);
   const [showScrollTop, setShowScrollTop] = useState(false);
@@ -69,13 +68,14 @@ export default function HomePage() {
     });
   }, [data.products, selectedCategory, searchQuery]);
 
-  const categorizedSections = useMemo(() => {
-    return data.categories
-      .map((cat) => ({
-        category: cat,
-        products: filteredProducts.filter((p) => p.category.toLowerCase() === cat.slug.toLowerCase()),
-      }))
-      .filter((section) => section.products.length > 0);
+  const groupedSections = useMemo(() => {
+    return CATEGORY_GROUPS.map((group) => ({
+      key: group.key,
+      title: group.title,
+      slugs: group.slugs,
+      categories: data.categories.filter((category) => group.slugs.some((slug) => slug === category.slug)),
+      products: filteredProducts.filter((product) => group.slugs.some((slug) => slug === product.category)),
+    })).filter((section) => section.products.length > 0);
   }, [data.categories, filteredProducts]);
 
   const handleOpenDetails = (product: Product, selectedColor?: ProductColor) => {
@@ -112,18 +112,16 @@ export default function HomePage() {
         onSelectCategory={setSelectedCategory}
       />
 
-      {/* Category Filter */}
-      <CategoryTabs
+      {/* Grouped category navigation */}
+      <CategoryShowcase
         categories={data.categories}
         products={data.products}
         selectedCategory={selectedCategory}
         onSelectCategory={setSelectedCategory}
-        viewMode={viewMode}
-        onToggleViewMode={setViewMode}
       />
 
       {/* Main Content */}
-      <main className="flex-1 max-w-6xl w-full mx-auto px-4 sm:px-6 py-10 sm:py-14">
+      <main id="collection" className="flex-1 scroll-mt-8 max-w-6xl w-full mx-auto px-4 sm:px-6 py-10 sm:py-14">
         {/* Search result banner */}
         {searchQuery && (
           <div className="mb-8 flex items-center justify-between text-sm" style={{ color: 'var(--muted)' }}>
@@ -143,39 +141,40 @@ export default function HomePage() {
 
         {/* Empty state */}
         {filteredProducts.length === 0 ? (
-          <div className="text-center py-20 max-w-sm mx-auto">
-            <p className="text-4xl mb-4">🔍</p>
-            <h3 className="text-base font-medium mb-2" style={{ color: 'var(--text)' }}>Ürün Bulunamadı</h3>
+          <div className="mx-auto my-2 w-full max-w-3xl rounded-[2rem] border px-6 py-12 text-center sm:py-14" style={{ background: 'var(--card)', borderColor: 'var(--border)' }}>
+            <span className="mx-auto mb-4 flex h-14 w-14 items-center justify-center rounded-2xl" style={{ background: 'var(--card-hover)' }}>
+              <Sparkles className="h-7 w-7" style={{ color: 'var(--accent)' }} />
+            </span>
+            <h3 className="text-base font-medium mb-2" style={{ color: 'var(--text)' }}>
+              {data.products.length === 0 ? 'İlk seçkimiz hazırlanıyor' : 'Ürün Bulunamadı'}
+            </h3>
             <p className="text-sm mb-6" style={{ color: 'var(--muted)' }}>
-              Farklı bir arama terimi deneyin veya tüm ürünleri görüntüleyin.
+              {data.products.length === 0
+                ? 'TEKİN koleksiyonuna yeni parçalar ekleniyor. Ürünler hazır olduğunda burada görebilirsiniz.'
+                : 'Farklı bir arama terimi deneyin veya tüm ürünleri görüntüleyin.'}
             </p>
-            <button
-              onClick={() => { setSearchQuery(''); setSelectedCategory('all'); }}
-              className="px-5 py-2.5 rounded-full text-sm font-medium text-white transition hover:opacity-90"
-              style={{ background: 'var(--accent)' }}
-            >
-              Tüm Ürünler
-            </button>
+            {data.products.length > 0 && (
+              <button
+                onClick={() => { setSearchQuery(''); setSelectedCategory('all'); }}
+                className="px-5 py-2.5 rounded-full text-sm font-medium text-white transition hover:opacity-90"
+                style={{ background: 'var(--accent)' }}
+              >Tüm Ürünler</button>
+            )}
           </div>
         ) : (
           <>
             {/* Sections view */}
-            {selectedCategory === 'all' && viewMode === 'sections' && !searchQuery ? (
+            {selectedCategory === 'all' && !searchQuery ? (
               <div className="space-y-16">
-                {categorizedSections.map(({ category, products }) => (
-                  <section key={category.id} id={`section-${category.slug}`} className="scroll-mt-36">
+                {groupedSections.map(({ key, title, categories, products }) => (
+                  <section key={key} className="scroll-mt-36">
                     {/* Section header */}
                     <div className="flex items-baseline justify-between mb-6 pb-3" style={{ borderBottom: '1px solid var(--border)' }}>
-                      <h2 className="text-lg font-medium" style={{ color: 'var(--text)' }}>
-                        {category.name}
-                      </h2>
-                      <button
-                        onClick={() => setSelectedCategory(category.slug)}
-                        className="text-xs transition hover:opacity-70"
-                        style={{ color: 'var(--accent)' }}
-                      >
-                        Tümünü Gör →
-                      </button>
+                      <div>
+                        <h2 className="text-lg font-medium" style={{ color: 'var(--text)' }}>{title}</h2>
+                        <p className="mt-1 text-xs" style={{ color: 'var(--muted)' }}>{categories.map((category) => category.name).join(' · ')}</p>
+                      </div>
+                      <span className="text-xs" style={{ color: 'var(--muted)' }}>{products.length} ürün</span>
                     </div>
 
                     {/* Products grid */}

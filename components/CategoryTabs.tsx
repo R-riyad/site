@@ -22,7 +22,7 @@ export default function CategoryTabs({
     slug === 'all' ? products.length : products.filter((p) => p.category === slug).length;
 
   return (
-    <div className="sticky top-16 z-40 py-3 backdrop-blur-md" style={{ background: 'rgba(250,248,244,0.9)', borderBottom: '1px solid var(--border)' }}>
+    <div className="sticky top-16 z-40 py-3 backdrop-blur-md" style={{ background: 'rgba(247,245,241,0.9)', borderBottom: '1px solid var(--border)' }}>
       <div className="max-w-6xl mx-auto px-4 sm:px-6">
         <div className="flex items-center gap-1 overflow-x-auto no-scrollbar">
           {/* All */}

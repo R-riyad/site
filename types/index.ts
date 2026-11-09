@@ -1,6 +1,7 @@
 export interface ProductColor {
   name: string;
   hex: string;
+  image?: string;
 }
 
 export interface Category {
@@ -31,7 +32,6 @@ export interface SiteSettings {
   siteSubtitle: string;
   whatsappNumber: string; // e.g. "905551234567"
   announcementText: string;
-  adminPin: string;
 }
 
 export interface StoreData {

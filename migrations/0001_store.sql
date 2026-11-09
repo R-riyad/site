@@ -1,0 +1,10 @@
+CREATE TABLE IF NOT EXISTS store (
+  id INTEGER PRIMARY KEY CHECK (id = 1),
+  value TEXT NOT NULL
+);
+
+CREATE TABLE IF NOT EXISTS admin_login_attempts (
+  ip TEXT PRIMARY KEY,
+  attempts INTEGER NOT NULL DEFAULT 0,
+  window_started_at INTEGER NOT NULL
+);

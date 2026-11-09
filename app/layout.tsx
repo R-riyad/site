@@ -14,9 +14,10 @@ const geistMono = localFont({
 });
 
 export const metadata: Metadata = {
-  title: 'VİTRİN | Ürün Kataloğu',
+  title: 'TEKİN | Özenle Seçilmiş Ürünler',
   description:
     'Süpürge, saat, gözlük, parfüm, elektronik ve termos modelleri. Fiyat ve renk seçenekleri.',
+  icons: { icon: '/tekin-logo.svg' },
 };
 
 export default function RootLayout({

@@ -21,6 +21,7 @@ export default function ProductModal({
   const [selectedColor, setSelectedColor] = useState<ProductColor | undefined>(initialColor);
   const [imageError, setImageError] = useState(false);
   const [copiedToast, setCopiedToast] = useState(false);
+  const visibleImage = selectedColor?.image || product?.image;
 
   useEffect(() => {
     if (product) {
@@ -79,10 +80,10 @@ export default function ProductModal({
           <div className="grid grid-cols-1 lg:grid-cols-2">
             {/* Image */}
             <div className="relative aspect-square lg:aspect-auto overflow-hidden" style={{ background: '#f0ece6' }}>
-              {product.image && !imageError ? (
+              {visibleImage && !imageError ? (
                 <img
-                  src={product.image}
-                  alt={product.name}
+                  src={visibleImage}
+                  alt={`${product.name}${selectedColor?.name ? ` – ${selectedColor.name}` : ''}`}
                   onError={() => setImageError(true)}
                   className="w-full h-full object-cover object-center"
                 />
@@ -132,7 +133,9 @@ export default function ProductModal({
                           <button
                             key={idx}
                             type="button"
-                            onClick={() => setSelectedColor(color)}
+                            onClick={() => { setSelectedColor(color); setImageError(false); }}
+                            title={color.name}
+                            aria-label={`${color.name} rengini göster`}
                             className="relative w-8 h-8 rounded-full flex items-center justify-center transition-all"
                             style={{
                               backgroundColor: color.hex,

@@ -9,6 +9,7 @@ import {
   SiteSettings,
 } from '@/types';
 import defaultStoreData from '@/data/products.json';
+import BrandLogo from '@/components/BrandLogo';
 import { formatPrice } from '@/lib/format';
 import {
   Plus,
@@ -26,7 +27,7 @@ import {
   Settings,
   AlertCircle,
   Eye,
-  CloudUpload,
+  LogOut,
 } from 'lucide-react';
 
 const PRESET_COLORS = [
@@ -47,6 +48,7 @@ const PRESET_COLORS = [
 export default function AdminPage() {
   const [data, setData] = useState<StoreData>(defaultStoreData as StoreData);
   const [isAuthenticated, setIsAuthenticated] = useState(false);
+  const [authChecked, setAuthChecked] = useState(false);
   const [pinInput, setPinInput] = useState('');
   const [pinError, setPinError] = useState(false);
 
@@ -59,7 +61,6 @@ export default function AdminPage() {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingProduct, setEditingProduct] = useState<Product | null>(null);
   const [isSaving, setIsSaving] = useState(false);
-  const [isPublishing, setIsPublishing] = useState(false);
   const [statusMessage, setStatusMessage] = useState<string | null>(null);
 
   // Form Fields
@@ -91,12 +92,18 @@ export default function AdminPage() {
   const [customColorName, setCustomColorName] = useState('');
   const [customColorHex, setCustomColorHex] = useState('#000000');
   const [imageUploadLoading, setImageUploadLoading] = useState(false);
+  const [uploadingColorIndex, setUploadingColorIndex] = useState<number | null>(null);
 
   // Settings form state
   const [settingsForm, setSettingsForm] = useState<SiteSettings>(data.settings);
 
   // Fetch real data on load with no-cache and localStorage sync
   useEffect(() => {
+    fetch('/api/admin/session', { cache: 'no-store' })
+      .then((res) => res.json())
+      .then((json) => setIsAuthenticated(Boolean(json.authenticated)))
+      .catch(() => setIsAuthenticated(false))
+      .finally(() => setAuthChecked(true));
     // 1. Try to load from localStorage first for instant state
     if (typeof window !== 'undefined') {
       try {
@@ -128,16 +135,20 @@ export default function AdminPage() {
       .catch((err) => console.log('Could not fetch /api/products:', err));
   }, []);
 
-  // Check auth - strictly validate against current saved adminPin
-  const handleLogin = (e: React.FormEvent) => {
+  const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
-    const activePin = (data.settings.adminPin || '1234').trim();
-    if (pinInput.trim() === activePin) {
+    try {
+      const res = await fetch('/api/admin/login', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ pin: pinInput }) });
+      if (!res.ok) throw new Error('Giriş başarısız');
       setIsAuthenticated(true);
       setPinError(false);
-    } else {
-      setPinError(true);
-    }
+    } catch { setPinError(true); }
+  };
+
+  const handleLogout = async () => {
+    await fetch('/api/admin/logout', { method: 'POST' });
+    setIsAuthenticated(false);
+    setPinInput('');
   };
 
   const handleOpenAddModal = () => {
@@ -179,7 +190,7 @@ export default function AdminPage() {
     if (!formData.colors.some((c) => c.name === color.name)) {
       setFormData((prev) => ({
         ...prev,
-        colors: [...prev.colors, color],
+        colors: [...prev.colors, { ...color, image: '' }],
       }));
     }
   };
@@ -189,7 +200,7 @@ export default function AdminPage() {
     if (!customColorName.trim()) return;
     setFormData((prev) => ({
       ...prev,
-      colors: [...prev.colors, { name: customColorName.trim(), hex: customColorHex }],
+      colors: [...prev.colors, { name: customColorName.trim(), hex: customColorHex, image: '' }],
     }));
     setCustomColorName('');
   };
@@ -202,31 +213,50 @@ export default function AdminPage() {
     }));
   };
 
-  // Handle local file upload
+  const uploadImageFile = async (file: File) => {
+    const body = new FormData();
+    body.append('file', file);
+    const res = await fetch('/api/upload', { method: 'POST', body });
+    const result = await res.json();
+    if (!res.ok || !result.url) throw new Error(result.error || 'Görsel yüklenemedi');
+    return result.url as string;
+  };
+
+  // Upload the main product image
   const handleImageFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
 
     setImageUploadLoading(true);
-    const body = new FormData();
-    body.append('file', file);
-
     try {
-      const res = await fetch('/api/upload', {
-        method: 'POST',
-        body,
-      });
-      const result = await res.json();
-      if (result.url) {
-        setFormData((prev) => ({ ...prev, image: result.url }));
-        showToast('Görsel başarıyla yüklendi!');
-      } else {
-        alert(result.error || 'Görsel yüklenemedi');
-      }
-    } catch {
-      alert('Görsel yüklenirken bağlantı hatası oluştu');
+      const url = await uploadImageFile(file);
+      setFormData((prev) => ({ ...prev, image: url }));
+      showToast('Ürün görseli yüklendi.');
+    } catch (error) {
+      alert(error instanceof Error ? error.message : 'Görsel yüklenirken bağlantı hatası oluştu');
     } finally {
       setImageUploadLoading(false);
+      e.target.value = '';
+    }
+  };
+
+  const handleColorImageFileChange = async (e: React.ChangeEvent<HTMLInputElement>, colorIndex: number) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    setUploadingColorIndex(colorIndex);
+    try {
+      const url = await uploadImageFile(file);
+      setFormData((prev) => ({
+        ...prev,
+        colors: prev.colors.map((color, index) => index === colorIndex ? { ...color, image: url } : color),
+      }));
+      showToast('Renk görseli yüklendi.');
+    } catch (error) {
+      alert(error instanceof Error ? error.message : 'Renk görseli yüklenemedi');
+    } finally {
+      setUploadingColorIndex(null);
+      e.target.value = '';
     }
   };
 
@@ -330,13 +360,9 @@ export default function AdminPage() {
     }
   };
 
-  // Save Settings (including PIN change)
+  // Save public store settings
   const handleSaveSettings = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!settingsForm.adminPin || !settingsForm.adminPin.trim()) {
-      alert('Yönetim şifresi boş bırakılamaz.');
-      return;
-    }
 
     try {
       const res = await fetch('/api/products', {
@@ -354,30 +380,12 @@ export default function AdminPage() {
         if (typeof window !== 'undefined') {
           localStorage.setItem('vitrin_store_data', JSON.stringify(updatedData));
         }
-        showToast('Ayarlar ve yeni şifreniz başarıyla kaydedildi!');
+        showToast('Ayarlar kaydedildi.');
       } else {
         alert('Ayarlar kaydedilemedi.');
       }
     } catch {
       alert('Bağlantı hatası');
-    }
-  };
-
-  // Publish to Vercel via Git
-  const handlePublishToVercel = async () => {
-    setIsPublishing(true);
-    try {
-      const res = await fetch('/api/publish', { method: 'POST' });
-      const result = await res.json();
-      if (result.success) {
-        showToast(result.message);
-      } else {
-        alert(result.message || 'Güncelleme gönderilemedi. Masaüstündeki Vercel-Guncelle.bat dosyasını çalıştırabilirsiniz.');
-      }
-    } catch {
-      alert('Yerel sunucuya ulaşılamadı. Masaüstündeki Vercel-Guncelle.bat dosyasını çift tıklayarak Vercel\'e gönderebilirsiniz.');
-    } finally {
-      setIsPublishing(false);
     }
   };
 
@@ -445,7 +453,7 @@ export default function AdminPage() {
 
   // Login Screen
   if (!isAuthenticated) {
-    const currentActivePin = data.settings.adminPin || '1234';
+    if (!authChecked) return <div className="min-h-screen grid place-items-center text-sm" style={{ background: 'var(--bg)', color: 'var(--muted)' }}>Yönetim oturumu kontrol ediliyor…</div>;
 
     return (
       <div className="min-h-screen flex items-center justify-center p-4" style={{ background: 'var(--bg)', color: 'var(--text)' }}>
@@ -453,10 +461,8 @@ export default function AdminPage() {
           className="rounded-2xl p-8 max-w-sm w-full shadow-lg text-center"
           style={{ background: 'var(--card)', border: '1px solid var(--border)' }}
         >
-          <div
-            className="w-12 h-12 rounded-full flex items-center justify-center mx-auto mb-4"
-            style={{ background: 'var(--card-hover)', color: 'var(--accent)' }}
-          >
+          <BrandLogo className="mb-7" />
+          <div className="w-12 h-12 rounded-full flex items-center justify-center mx-auto mb-4" style={{ background: 'var(--card-hover)', color: 'var(--accent)' }}>
             <Lock className="w-5 h-5" />
           </div>
 
@@ -529,7 +535,7 @@ export default function AdminPage() {
       )}
 
       {/* Admin Header */}
-      <header className="sticky top-0 z-30 backdrop-blur-md border-b" style={{ background: 'rgba(250,248,244,0.95)', borderColor: 'var(--border)' }}>
+      <header className="sticky top-0 z-30 backdrop-blur-md border-b" style={{ background: 'rgba(247,245,241,0.95)', borderColor: 'var(--border)' }}>
         <div className="max-w-6xl mx-auto px-4 sm:px-6">
           <div className="flex items-center justify-between h-16 gap-4">
             <div className="flex items-center gap-3">
@@ -541,26 +547,12 @@ export default function AdminPage() {
               >
                 <ArrowLeft className="w-4 h-4" />
               </Link>
-              <div>
-                <h1 className="text-base font-medium" style={{ color: 'var(--text)' }}>
-                  Yönetim Paneli
-                </h1>
-              </div>
+              <div className="hidden sm:block border-r pr-4" style={{ borderColor: 'var(--border)' }}><BrandLogo compact /></div>
+              <div><h1 className="text-base font-medium" style={{ color: 'var(--text)' }}>Yönetim Paneli</h1></div>
             </div>
 
             {/* Quick Actions */}
             <div className="flex items-center gap-2">
-              <button
-                onClick={handlePublishToVercel}
-                disabled={isPublishing}
-                className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs rounded-full border transition hover:opacity-80"
-                style={{ borderColor: 'var(--accent)', color: 'var(--accent)' }}
-                title="Değişiklikleri GitHub ve Vercel'e gönderir"
-              >
-                <CloudUpload className="w-3.5 h-3.5" />
-                <span className="hidden sm:inline">{isPublishing ? 'Gönderiliyor...' : 'Vercel\'e Gönder'}</span>
-              </button>
-
               <Link
                 href="/"
                 target="_blank"
@@ -589,6 +581,9 @@ export default function AdminPage() {
                 <Plus className="w-3.5 h-3.5" />
                 <span>Ürün Ekle</span>
               </button>
+              <button onClick={handleLogout} className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs rounded-full border transition hover:opacity-70" style={{ borderColor: 'var(--border)', color: 'var(--muted)' }} title="Güvenli çıkış">
+                <LogOut className="w-3.5 h-3.5" /><span className="hidden md:inline">Çıkış</span>
+              </button>
             </div>
           </div>
 
@@ -616,7 +611,7 @@ export default function AdminPage() {
               }}
             >
               <Settings className="w-3.5 h-3.5" />
-              <span>Ayarlar & Şifre</span>
+              <span>Mağaza Ayarları</span>
             </button>
           </div>
         </div>
@@ -777,9 +772,9 @@ export default function AdminPage() {
         ) : (
           /* SETTINGS TAB */
           <div className="max-w-xl rounded-xl p-6 shadow-sm" style={{ background: 'var(--card)', border: '1px solid var(--border)' }}>
-            <h2 className="text-base font-medium mb-1" style={{ color: 'var(--text)' }}>Site & Şifre Ayarları</h2>
+            <h2 className="text-base font-medium mb-1" style={{ color: 'var(--text)' }}>Mağaza Ayarları</h2>
             <p className="text-xs mb-6" style={{ color: 'var(--muted)' }}>
-              Site başlığı, WhatsApp numarası ve yönetim giriş şifrenizi buradan güncelleyin.
+              Mağaza bilgilerini ve WhatsApp iletişim numarasını buradan güncelleyin.
             </p>
 
             <form onSubmit={handleSaveSettings} className="space-y-4 text-xs">
@@ -826,30 +821,13 @@ export default function AdminPage() {
                 </div>
               </div>
 
-              <div>
-                <label className="block font-medium mb-1" style={{ color: 'var(--text)' }}>
-                  Yönetim Paneli Giriş Şifresi (PIN)
-                </label>
-                <input
-                  type="text"
-                  value={settingsForm.adminPin}
-                  onChange={(e) => setSettingsForm({ ...settingsForm, adminPin: e.target.value })}
-                  placeholder="Yeni şifrenizi girin"
-                  className="w-full px-3 py-2 rounded-lg border focus:outline-none font-mono"
-                  style={{ background: 'var(--bg)', borderColor: 'var(--border)', color: 'var(--text)' }}
-                />
-                <p className="text-[11px] mt-1" style={{ color: 'var(--muted)' }}>
-                  Değiştirdikten sonra "Ayarları Kaydet" butonuna basınız. Girişte bu şifre istenecektir.
-                </p>
-              </div>
-
               <div className="pt-4 flex items-center justify-between" style={{ borderTop: '1px solid var(--border)' }}>
                 <button
                   type="submit"
                   className="px-5 py-2 rounded-full text-xs font-medium text-white transition hover:opacity-90 shadow-sm"
                   style={{ background: 'var(--accent)' }}
                 >
-                  Ayarları & Şifreyi Kaydet
+                  Ayarları Kaydet
                 </button>
 
                 <label className="inline-flex items-center gap-1.5 px-3 py-2 rounded-full border text-xs cursor-pointer transition hover:opacity-70" style={{ borderColor: 'var(--border)', color: 'var(--muted)' }}>
@@ -878,7 +856,7 @@ export default function AdminPage() {
 
           <div className="flex min-h-full items-center justify-center p-4">
             <div
-              className="relative transform overflow-hidden rounded-2xl text-left shadow-2xl w-full max-w-xl my-8 p-6"
+              className="relative max-h-[90vh] overflow-y-auto rounded-3xl text-left shadow-2xl w-full max-w-2xl my-8 p-5 sm:p-7"
               style={{ background: 'var(--card)', border: '1px solid var(--border)' }}
             >
               {/* Close */}
@@ -890,12 +868,17 @@ export default function AdminPage() {
                 <X className="w-4 h-4" />
               </button>
 
-              <h2 className="text-base font-medium mb-1" style={{ color: 'var(--text)' }}>
-                {editingProduct ? 'Ürünü Düzenle' : 'Yeni Ürün Ekle'}
-              </h2>
-              <p className="text-xs mb-5" style={{ color: 'var(--muted)' }}>
-                Ürün bilgilerini ve renk seçeneklerini belirleyin.
-              </p>
+              <div className="mb-6 flex items-center gap-3 border-b pb-4" style={{ borderColor: 'var(--border)' }}>
+                <BrandLogo compact />
+                  <div>
+                    <h2 className="text-base font-semibold mb-1" style={{ color: 'var(--text)' }}>
+                      {editingProduct ? 'Ürünü Düzenle' : 'Yeni Ürün Ekle'}
+                    </h2>
+                    <p className="text-xs" style={{ color: 'var(--muted)' }}>
+                      Ürün bilgilerini ve renk görsellerini yönetin.
+                    </p>
+                  </div>
+                </div>
 
               <form onSubmit={handleSaveProduct} className="space-y-4 text-xs">
                 {/* Product Name */}
@@ -1044,25 +1027,40 @@ export default function AdminPage() {
 
                   {/* Added colors */}
                   {formData.colors.length > 0 && (
-                    <div className="flex flex-wrap gap-1.5">
+                    <div className="space-y-3">
                       {formData.colors.map((c, idx) => (
                         <div
                           key={idx}
-                          className="flex items-center gap-1.5 px-2.5 py-1 rounded-full border text-[11px]"
+                          className="grid grid-cols-[56px_minmax(0,1fr)_auto] items-center gap-3 rounded-2xl border p-3 sm:grid-cols-[72px_minmax(0,1fr)_auto]"
                           style={{ background: 'var(--card)', borderColor: 'var(--border)', color: 'var(--text)' }}
                         >
-                          <span
-                            className="w-3 h-3 rounded-full border inline-block"
-                            style={{ backgroundColor: c.hex, borderColor: 'rgba(0,0,0,0.1)' }}
-                          />
-                          <span>{c.name}</span>
-                          <button
-                            type="button"
-                            onClick={() => handleRemoveColor(idx)}
-                            className="hover:opacity-70 ml-0.5"
-                            style={{ color: 'var(--muted)' }}
-                          >
-                            ✕
+                          <div className="relative h-14 w-14 overflow-hidden rounded-xl border sm:h-[72px] sm:w-[72px]" style={{ background: 'var(--bg)', borderColor: 'var(--border)' }}>
+                            {c.image ? <img src={c.image} alt={`${c.name} renk önizlemesi`} className="h-full w-full object-cover" /> : <span className="absolute inset-0 flex items-center justify-center text-[10px]" style={{ color: 'var(--muted)' }}>Fotoğraf yok</span>}
+                          </div>
+                          <div className="min-w-0 space-y-2">
+                            <div className="flex items-center gap-2 font-medium">
+                              <span className="h-3.5 w-3.5 shrink-0 rounded-full border" style={{ backgroundColor: c.hex, borderColor: 'rgba(0,0,0,0.12)' }} />
+                              <span className="truncate">{c.name}</span>
+                            </div>
+                            <div className="flex flex-col gap-2 sm:flex-row">
+                              <label className="inline-flex shrink-0 cursor-pointer items-center justify-center gap-1.5 rounded-lg border px-2.5 py-1.5 text-[11px] transition hover:border-[var(--accent)]" style={{ borderColor: 'var(--border)', color: 'var(--text)' }}>
+                                <Upload className="h-3.5 w-3.5" />
+                                {uploadingColorIndex === idx ? 'Yükleniyor…' : c.image ? 'Fotoğrafı değiştir' : 'Renk fotoğrafı ekle'}
+                                <input type="file" accept="image/*" onChange={(e) => handleColorImageFileChange(e, idx)} disabled={uploadingColorIndex !== null} className="hidden" />
+                              </label>
+                              <input
+                                type="url"
+                                value={c.image || ''}
+                                onChange={(e) => setFormData((prev) => ({ ...prev, colors: prev.colors.map((color, index) => index === idx ? { ...color, image: e.target.value } : color) }))}
+                                placeholder="veya fotoğraf bağlantısı"
+                                aria-label={`${c.name} rengi fotoğraf bağlantısı`}
+                                className="min-w-0 flex-1 rounded-lg border px-2.5 py-1.5 text-[11px] focus:outline-none"
+                                style={{ background: 'var(--bg)', borderColor: 'var(--border)', color: 'var(--text)' }}
+                              />
+                            </div>
+                          </div>
+                          <button type="button" onClick={() => handleRemoveColor(idx)} aria-label={`${c.name} rengini kaldır`} className="rounded-full p-2 transition hover:bg-red-50 hover:text-red-600" style={{ color: 'var(--muted)' }}>
+                            <X className="h-4 w-4" />
                           </button>
                         </div>
                       ))}

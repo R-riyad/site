@@ -1,14 +1,26 @@
 import fs from 'fs';
 import path from 'path';
+import { getCloudflareContext } from '@opennextjs/cloudflare';
 import { StoreData } from '@/types';
 import defaultData from '@/data/products.json';
 export { formatPrice } from './format';
 
 const DATA_FILE_PATH = path.join(process.cwd(), 'data', 'products.json');
-const REDIS_KEY = 'vitrin_store_data';
-
-// In-memory cache
 let inMemoryStore: StoreData = defaultData as StoreData;
+
+async function getDatabase() {
+  try {
+    const { env } = await getCloudflareContext({ async: true });
+    return (env as CloudflareEnv).STORE;
+  } catch {
+    return null;
+  }
+}
+
+function publicStoreData(data: StoreData): StoreData {
+  const { adminPin: _adminPin, ...settings } = (data.settings || {}) as StoreData['settings'] & { adminPin?: string };
+  return { ...data, settings };
+}
 
 // Safely unwrap data that might be double-stringified or plain object
 export function parseStoreData(val: any): StoreData | null {
@@ -27,58 +39,28 @@ export function parseStoreData(val: any): StoreData | null {
   return null;
 }
 
-// Check if Upstash Redis / Vercel KV is configured in environment
-function getRedisClient() {
-  const url =
-    process.env.UPSTASH_REDIS_REST_URL ||
-    process.env.KV_REST_API_URL ||
-    process.env.STORAGE_REST_API_URL;
-  const token =
-    process.env.UPSTASH_REDIS_REST_TOKEN ||
-    process.env.KV_REST_API_TOKEN ||
-    process.env.STORAGE_REST_API_TOKEN;
-
-  if (url && token) {
-    try {
-      const { Redis } = require('@upstash/redis');
-      return new Redis({ url, token });
-    } catch (e) {
-      console.warn('Could not initialize Redis client:', e);
-    }
-  }
-  return null;
-}
-
 export async function getStoreDataAsync(): Promise<StoreData> {
-  const redis = getRedisClient();
-  if (redis) {
-    try {
-      const raw = await redis.get(REDIS_KEY);
-      const parsed = parseStoreData(raw);
+  const db = await getDatabase();
+  if (db) {
+    const row = await db.prepare('SELECT value FROM store WHERE id = 1').first() as { value: string } | null;
+    if (row?.value) {
+      const parsed = parseStoreData(row.value);
       if (parsed) {
-        inMemoryStore = parsed;
+        inMemoryStore = publicStoreData(parsed);
         return inMemoryStore;
-      } else {
-        // Auto-seed Redis if empty
-        try {
-          await redis.set(REDIS_KEY, defaultData);
-        } catch (seedErr) {
-          console.warn('Could not seed Redis:', seedErr);
-        }
-        return defaultData as StoreData;
       }
-    } catch (err) {
-      console.warn('Redis get failed, falling back to file/memory:', err);
     }
+    const seed = publicStoreData(defaultData as StoreData);
+    await db.prepare('INSERT OR IGNORE INTO store (id, value) VALUES (1, ?)').bind(JSON.stringify(seed)).run();
+    inMemoryStore = seed;
+    return seed;
   }
-
-  // Fallback to local filesystem
   try {
     if (fs.existsSync(DATA_FILE_PATH)) {
       const fileContent = fs.readFileSync(DATA_FILE_PATH, 'utf-8');
       const parsed = parseStoreData(fileContent);
       if (parsed) {
-        inMemoryStore = parsed;
+        inMemoryStore = publicStoreData(parsed);
         return inMemoryStore;
       }
     }
@@ -106,53 +88,30 @@ export function getStoreData(): StoreData {
 }
 
 export async function saveStoreDataAsync(data: StoreData): Promise<boolean> {
-  inMemoryStore = data;
-  let saved = false;
-
-  // 1. Save to Redis / Vercel KV if available (pass raw object to avoid double-stringification)
-  const redis = getRedisClient();
-  if (redis) {
+  const safeData = publicStoreData(data);
+  inMemoryStore = safeData;
+  const db = await getDatabase();
+  if (db) {
     try {
-      // Check estimated data size — Upstash free tier has 1MB value limit
-      const dataStr = JSON.stringify(data);
-      const dataSizeMB = new TextEncoder().encode(dataStr).length / (1024 * 1024);
-      
-      if (dataSizeMB > 0.9) {
-        console.warn(`Data size is ${dataSizeMB.toFixed(2)}MB — close to or exceeding Redis limit`);
-        // Strip base64 image data that's too large to save space
-        const trimmedData = JSON.parse(dataStr) as StoreData;
-        trimmedData.products = trimmedData.products.map(p => {
-          if (p.image && p.image.startsWith('data:') && p.image.length > 200_000) {
-            console.warn(`Trimming large base64 image for product: ${p.name}`);
-            return { ...p, image: '' };
-          }
-          return p;
-        });
-        await redis.set(REDIS_KEY, trimmedData);
-      } else {
-        await redis.set(REDIS_KEY, data);
-      }
-      saved = true;
-    } catch (err) {
-      console.error('Redis set failed:', err);
-      // Don't return false yet — try filesystem fallback
+      await db.prepare('INSERT INTO store (id, value) VALUES (1, ?) ON CONFLICT(id) DO UPDATE SET value = excluded.value')
+        .bind(JSON.stringify(safeData)).run();
+      return true;
+    } catch (error) {
+      console.error('Could not save store data to D1:', error);
+      return false;
     }
   }
-
-  // 2. Save to local filesystem if writable
   try {
     const dir = path.dirname(DATA_FILE_PATH);
     if (!fs.existsSync(dir)) {
       fs.mkdirSync(dir, { recursive: true });
     }
-    fs.writeFileSync(DATA_FILE_PATH, JSON.stringify(data, null, 2), 'utf-8');
-    saved = true;
+    fs.writeFileSync(DATA_FILE_PATH, JSON.stringify(safeData, null, 2), 'utf-8');
+    return true;
   } catch (error) {
-    // Expected on Vercel read-only filesystem
-    console.warn('Filesystem write skipped (read-only environment)');
+    console.error('Could not save data/products.json:', error);
+    return false;
   }
-
-  return saved;
 }
 
 export function saveStoreData(data: StoreData): boolean {

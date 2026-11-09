@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { getStoreDataAsync, saveStoreDataAsync } from '@/lib/products';
 import { Product, StoreData, SiteSettings } from '@/types';
 import defaultData from '@/data/products.json';
+import { hasAdminSession, unauthorized } from '@/lib/admin-auth';
 
 export const dynamic = 'force-dynamic';
 export const revalidate = 0;
@@ -23,6 +24,7 @@ export async function GET() {
 }
 
 export async function POST(req: NextRequest) {
+  if (!(await hasAdminSession())) return unauthorized();
   try {
     let body: any;
     try {
@@ -119,6 +121,7 @@ export async function POST(req: NextRequest) {
 }
 
 export async function DELETE(req: NextRequest) {
+  if (!(await hasAdminSession())) return unauthorized();
   try {
     const { searchParams } = new URL(req.url);
     const id = searchParams.get('id');
@@ -144,7 +147,13 @@ export async function DELETE(req: NextRequest) {
       );
     }
 
-    await saveStoreDataAsync(currentData);
+    const saved = await saveStoreDataAsync(currentData);
+    if (!saved) {
+      return NextResponse.json(
+        { error: 'Ürün silinemedi. Veri dosyasına yazma iznini kontrol edin.' },
+        { status: 500, headers: noCacheHeaders }
+      );
+    }
 
     return NextResponse.json(
       {

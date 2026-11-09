@@ -3,11 +3,11 @@
 @tailwind utilities;
 
 :root {
-  --bg: #faf8f4;
-  --text: #1a1a1a;
-  --muted: #9c9789;
-  --accent: #b8856c;
-  --border: #e8e4de;
+  --bg: #f7f5f1;
+  --text: #231e1a;
+  --muted: #898177;
+  --accent: #9b7053;
+  --border: #e8e3dc;
   --card: #ffffff;
   --card-hover: #f5f2ed;
 }
@@ -18,8 +18,23 @@ body {
   -webkit-font-smoothing: antialiased;
 }
 
+button, a, input, textarea { -webkit-tap-highlight-color: transparent; }
+button:focus-visible, a:focus-visible, input:focus-visible, textarea:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 3px;
+}
+
+.hero-panel {
+  background: radial-gradient(ellipse at 80% 18%, rgba(157, 112, 79, .26), transparent 32%), linear-gradient(120deg, #241d19 0%, #332720 58%, #49372a 100%);
+  box-shadow: 0 24px 70px rgba(52, 39, 29, .16);
+}
+.hero-orb { position: absolute; border: 1px solid rgba(238, 219, 199, .12); border-radius: 9999px; pointer-events: none; }
+.hero-orb-one { width: 340px; height: 340px; right: 8%; top: -36%; box-shadow: 0 0 0 32px rgba(238, 219, 199, .025), 0 0 0 64px rgba(238, 219, 199, .02); }
+.hero-orb-two { width: 230px; height: 230px; right: 1%; bottom: -46%; }
+.hero-mark { position: absolute; right: 10%; top: 50%; transform: translateY(-50%); font-family: Georgia, serif; font-size: clamp(16rem, 36vw, 31rem); line-height: .8; font-weight: 400; color: rgba(255, 255, 255, .035); pointer-events: none; }
+
 ::selection {
-  background: #b8856c;
+  background: #9b7053;
   color: white;
 }
 
@@ -29,6 +44,10 @@ body {
 
 .no-scrollbar::-webkit-scrollbar { display: none; }
 .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after { scroll-behavior: auto !important; animation-duration: .01ms !important; transition-duration: .01ms !important; }
+}
 
 @layer utilities {
   .text-balance { text-wrap: balance; }

@@ -1,10 +1,9 @@
 {
   "settings": {
-    "siteName": "LÜKS VİTRİN",
-    "siteSubtitle": "Özenle Seçilmiş Özel Ürün Kataloğu",
+    "siteName": "TEKİN",
+    "siteSubtitle": "",
     "whatsappNumber": "905000000000",
-    "announcementText": "✨ Özel koleksiyonumuzu inceleyebilir, detaylı bilgi ve sipariş için bize ulaşabilirsiniz.",
-    "adminPin": "1234"
+    "announcementText": "Özenle seçilen parçalar, Tekin ailesinin imzasıyla."
   },
   "categories": [
     {

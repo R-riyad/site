@@ -4,6 +4,7 @@ import React, { useState } from 'react';
 import Link from 'next/link';
 import { Search, Menu, X } from 'lucide-react';
 import { SiteSettings, Category } from '@/types';
+import BrandLogo from '@/components/BrandLogo';
 
 interface NavbarProps {
   settings: SiteSettings;
@@ -30,9 +31,7 @@ export default function Navbar({
         <div className="flex items-center justify-between h-16 gap-4">
           {/* Logo */}
           <Link href="/" className="flex items-center gap-2 group flex-shrink-0">
-            <span className="font-semibold text-lg tracking-tight" style={{ color: 'var(--text)' }}>
-              {settings.siteName || 'VİTRİN'}
-            </span>
+            <BrandLogo />
           </Link>
 
           {/* Desktop Search */}
@@ -91,7 +90,7 @@ export default function Navbar({
               type="text"
               value={searchQuery}
               onChange={(e) => onSearchChange(e.target.value)}
-              placeholder="Ürün ara..."
+              placeholder="Koleksiyonda ara..."
               className="w-full pl-10 pr-4 py-2 text-sm rounded-full border bg-transparent focus:outline-none"
               style={{ borderColor: 'var(--border)', color: 'var(--text)' }}
             />
