@@ -9,12 +9,18 @@ import HeroBanner from '@/components/HeroBanner';
 import Footer from '@/components/Footer';
 import { StoreData, Product, ProductColor } from '@/types';
 import defaultStoreData from '@/data/products.json';
-import { ArrowUp, Phone, Sparkles } from 'lucide-react';
+import { ArrowUp, Phone, RotateCcw, SlidersHorizontal, Sparkles } from 'lucide-react';
 
 export default function HomePage() {
   const [data, setData] = useState<StoreData>(defaultStoreData as StoreData);
   const [selectedCategory, setSelectedCategory] = useState<string>('all');
   const [searchQuery, setSearchQuery] = useState<string>('');
+  const [selectedColor, setSelectedColor] = useState<string>('all');
+  const [minPrice, setMinPrice] = useState('');
+  const [maxPrice, setMaxPrice] = useState('');
+  const [inStockOnly, setInStockOnly] = useState(false);
+  const [sortBy, setSortBy] = useState('recommended');
+  const [filtersOpen, setFiltersOpen] = useState(false);
   const [modalProduct, setModalProduct] = useState<Product | null>(null);
   const [modalInitialColor, setModalInitialColor] = useState<ProductColor | undefined>(undefined);
   const [showScrollTop, setShowScrollTop] = useState(false);
@@ -53,8 +59,17 @@ export default function HomePage() {
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
 
+  const availableColors = useMemo(() => {
+    const colors = new Map<string, string>();
+    data.products.forEach((product) => product.colors?.forEach((color) => {
+      const key = color.name.trim().toLocaleLowerCase('tr-TR');
+      if (key) colors.set(key, color.name.trim());
+    }));
+    return [...colors.entries()].sort((a, b) => a[1].localeCompare(b[1], 'tr-TR'));
+  }, [data.products]);
+
   const filteredProducts = useMemo(() => {
-    return data.products.filter((product) => {
+    const filtered = data.products.filter((product) => {
       const matchesCategory =
         selectedCategory === 'all' || product.category.toLocaleLowerCase('tr-TR') === selectedCategory.toLocaleLowerCase('tr-TR');
       const query = searchQuery.trim().toLocaleLowerCase('tr-TR');
@@ -65,13 +80,38 @@ export default function HomePage() {
         product.category.toLocaleLowerCase('tr-TR').includes(query) ||
         product.colors?.some((color) => color.name.toLocaleLowerCase('tr-TR').includes(query)) ||
         (product.features && product.features.some((f) => f.toLocaleLowerCase('tr-TR').includes(query)));
-      return matchesCategory && matchesSearch;
+      const matchesColor = selectedColor === 'all' || product.colors?.some((color) => color.name.toLocaleLowerCase('tr-TR') === selectedColor);
+      const matchesMinPrice = !minPrice || product.price >= Number(minPrice);
+      const matchesMaxPrice = !maxPrice || product.price <= Number(maxPrice);
+      const matchesStock = !inStockOnly || product.inStock !== false;
+      return matchesCategory && matchesSearch && matchesColor && matchesMinPrice && matchesMaxPrice && matchesStock;
     });
-  }, [data.products, selectedCategory, searchQuery]);
 
-  const preferredColorForSearch = (product: Product) => {
+    return filtered.sort((a, b) => {
+      if (sortBy === 'price-asc') return a.price - b.price;
+      if (sortBy === 'price-desc') return b.price - a.price;
+      if (sortBy === 'name') return a.name.localeCompare(b.name, 'tr-TR');
+      if (sortBy === 'newest') return (b.createdAt || '').localeCompare(a.createdAt || '');
+      return 0;
+    });
+  }, [data.products, selectedCategory, searchQuery, selectedColor, minPrice, maxPrice, inStockOnly, sortBy]);
+
+  const preferredColorForProduct = (product: Product) => {
+    if (selectedColor !== 'all') return product.colors?.find((color) => color.name.toLocaleLowerCase('tr-TR') === selectedColor);
     const query = searchQuery.trim().toLocaleLowerCase('tr-TR');
     return query ? product.colors?.find((color) => color.name.toLocaleLowerCase('tr-TR').includes(query)) : undefined;
+  };
+
+  const activeFilterCount = [selectedCategory !== 'all', selectedColor !== 'all', Boolean(minPrice), Boolean(maxPrice), inStockOnly].filter(Boolean).length;
+  const hasActiveFilters = activeFilterCount > 0 || Boolean(searchQuery.trim()) || sortBy !== 'recommended';
+  const resetFilters = () => {
+    setSelectedCategory('all');
+    setSearchQuery('');
+    setSelectedColor('all');
+    setMinPrice('');
+    setMaxPrice('');
+    setInStockOnly(false);
+    setSortBy('recommended');
   };
 
   const groupedSections = useMemo(() => {
@@ -128,6 +168,84 @@ export default function HomePage() {
 
       {/* Main Content */}
       <main id="collection" className="flex-1 scroll-mt-8 max-w-6xl w-full mx-auto px-4 sm:px-6 py-10 sm:py-14">
+        <section className="mb-8 rounded-2xl border p-4 sm:p-5" style={{ background: 'var(--card)', borderColor: 'var(--border)' }} aria-label="Ürün filtreleri">
+          <div className="flex flex-wrap items-center justify-between gap-3">
+            <div>
+              <p className="text-sm font-medium" style={{ color: 'var(--text)' }}>Koleksiyonu filtrele</p>
+              <p className="mt-1 text-xs" style={{ color: 'var(--muted)' }}>{filteredProducts.length} ürün listeleniyor</p>
+            </div>
+            <div className="flex flex-wrap items-center gap-2">
+              <label className="sr-only" htmlFor="product-sort">Sıralama</label>
+              <select
+                id="product-sort"
+                value={sortBy}
+                onChange={(event) => setSortBy(event.target.value)}
+                className="h-10 rounded-full border bg-transparent px-3 text-xs outline-none focus:ring-1"
+                style={{ borderColor: 'var(--border)', color: 'var(--text)' }}
+              >
+                <option value="recommended">Önerilen sıralama</option>
+                <option value="newest">En yeni</option>
+                <option value="price-asc">Fiyat: artan</option>
+                <option value="price-desc">Fiyat: azalan</option>
+                <option value="name">İsim: A–Z</option>
+              </select>
+              <button
+                type="button"
+                onClick={() => setFiltersOpen((open) => !open)}
+                aria-expanded={filtersOpen}
+                className="inline-flex h-10 items-center gap-2 rounded-full border px-4 text-xs font-medium transition hover:opacity-75"
+                style={{ borderColor: 'var(--border)', color: 'var(--text)' }}
+              >
+                <SlidersHorizontal className="h-3.5 w-3.5" />
+                Filtreler{activeFilterCount > 0 ? ` (${activeFilterCount})` : ''}
+              </button>
+            </div>
+          </div>
+
+          {filtersOpen && (
+            <div className="mt-5 grid gap-4 border-t pt-5 sm:grid-cols-2 lg:grid-cols-4" style={{ borderColor: 'var(--border)' }}>
+              <label className="grid gap-1.5 text-xs" style={{ color: 'var(--muted)' }}>
+                Kategori
+                <select value={selectedCategory} onChange={(event) => setSelectedCategory(event.target.value)} className="h-10 rounded-xl border bg-transparent px-3 text-sm outline-none" style={{ borderColor: 'var(--border)', color: 'var(--text)' }}>
+                  <option value="all">Tüm kategoriler</option>
+                  {data.categories.map((category) => <option key={category.id} value={category.slug}>{category.name}</option>)}
+                </select>
+              </label>
+
+              <label className="grid gap-1.5 text-xs" style={{ color: 'var(--muted)' }}>
+                Renk
+                <select value={selectedColor} onChange={(event) => setSelectedColor(event.target.value)} className="h-10 rounded-xl border bg-transparent px-3 text-sm outline-none" style={{ borderColor: 'var(--border)', color: 'var(--text)' }}>
+                  <option value="all">Tüm renkler</option>
+                  {availableColors.map(([key, name]) => <option key={key} value={key}>{name}</option>)}
+                </select>
+              </label>
+
+              <fieldset className="grid gap-1.5 text-xs" style={{ color: 'var(--muted)' }}>
+                <legend>Fiyat aralığı (₺)</legend>
+                <div className="grid grid-cols-2 gap-2">
+                  <label className="sr-only" htmlFor="min-price">En düşük fiyat</label>
+                  <input id="min-price" type="number" min="0" inputMode="numeric" placeholder="En az" value={minPrice} onChange={(event) => setMinPrice(event.target.value)} className="h-10 min-w-0 rounded-xl border bg-transparent px-3 text-sm outline-none" style={{ borderColor: 'var(--border)', color: 'var(--text)' }} />
+                  <label className="sr-only" htmlFor="max-price">En yüksek fiyat</label>
+                  <input id="max-price" type="number" min="0" inputMode="numeric" placeholder="En çok" value={maxPrice} onChange={(event) => setMaxPrice(event.target.value)} className="h-10 min-w-0 rounded-xl border bg-transparent px-3 text-sm outline-none" style={{ borderColor: 'var(--border)', color: 'var(--text)' }} />
+                </div>
+              </fieldset>
+
+              <div className="flex items-end">
+                <label className="flex min-h-10 cursor-pointer items-center gap-2 text-sm" style={{ color: 'var(--text)' }}>
+                  <input type="checkbox" checked={inStockOnly} onChange={(event) => setInStockOnly(event.target.checked)} className="h-4 w-4 accent-[var(--accent)]" />
+                  Yalnızca stokta olanlar
+                </label>
+              </div>
+              <div className="flex flex-wrap items-center justify-between gap-2 sm:col-span-2 lg:col-span-4">
+                <p className="text-xs" style={{ color: 'var(--muted)' }}>{filteredProducts.length} ürün bu filtrelerle eşleşiyor.</p>
+                <button type="button" onClick={resetFilters} className="inline-flex items-center gap-1.5 text-xs font-medium hover:opacity-70" style={{ color: 'var(--accent)' }}>
+                  <RotateCcw className="h-3.5 w-3.5" /> Filtreleri temizle
+                </button>
+              </div>
+            </div>
+          )}
+        </section>
+
         {/* Search result banner */}
         {searchQuery && (
           <div className="mb-8 flex items-center justify-between text-sm" style={{ color: 'var(--muted)' }}>
@@ -161,7 +279,7 @@ export default function HomePage() {
             </p>
             {data.products.length > 0 && (
               <button
-                onClick={() => { setSearchQuery(''); setSelectedCategory('all'); }}
+                onClick={resetFilters}
                 className="px-5 py-2.5 rounded-full text-sm font-medium text-white transition hover:opacity-90"
                 style={{ background: 'var(--accent)' }}
               >Tüm Ürünler</button>
@@ -170,7 +288,7 @@ export default function HomePage() {
         ) : (
           <>
             {/* Sections view */}
-            {selectedCategory === 'all' && !searchQuery ? (
+            {!hasActiveFilters ? (
               <div className="space-y-16">
                 {groupedSections.map(({ key, title, categories, products }) => (
                   <section key={key} className="scroll-mt-36">
@@ -189,7 +307,7 @@ export default function HomePage() {
                         <ProductCard
                           key={product.id}
                           product={product}
-                          preferredColor={preferredColorForSearch(product)}
+                          preferredColor={preferredColorForProduct(product)}
                           onOpenDetails={handleOpenDetails}
                         />
                       ))}
@@ -223,7 +341,7 @@ export default function HomePage() {
                     <ProductCard
                       key={product.id}
                       product={product}
-                      preferredColor={preferredColorForSearch(product)}
+                      preferredColor={preferredColorForProduct(product)}
                       onOpenDetails={handleOpenDetails}
                     />
                   ))}
