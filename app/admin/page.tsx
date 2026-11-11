@@ -272,6 +272,10 @@ export default function AdminPage() {
       alert('Lütfen geçerli bir fiyat giriniz.');
       return;
     }
+    if (!formData.image.trim()) {
+      alert('Lütfen ürün görselini bilgisayarınızdan veya telefonunuzdan seçin.');
+      return;
+    }
 
     setIsSaving(true);
 
@@ -975,26 +979,18 @@ export default function AdminPage() {
                   </label>
 
                   <div className="flex items-center gap-2">
-                    <label className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg border text-xs cursor-pointer transition hover:opacity-70" style={{ background: 'var(--card)', borderColor: 'var(--border)', color: 'var(--text)' }}>
+                    <label className="relative inline-flex min-h-11 items-center gap-2 px-4 py-2 rounded-lg border text-xs font-medium cursor-pointer transition hover:opacity-70" style={{ background: 'var(--card)', borderColor: 'var(--border)', color: 'var(--text)' }}>
                       <Upload className="w-3.5 h-3.5" />
-                      <span>{imageUploadLoading ? 'Yükleniyor...' : 'Bilgisayardan Seç'}</span>
+                      <span>{imageUploadLoading ? 'Fotoğraf yükleniyor…' : 'Bilgisayar veya telefondan fotoğraf seç'}</span>
                       <input
                         type="file"
                         accept="image/*"
                         onChange={handleImageFileChange}
                         disabled={imageUploadLoading}
-                        className="hidden"
+                        aria-label="Bilgisayar veya telefondan ürün fotoğrafı seç"
+                        className="absolute inset-0 h-full w-full cursor-pointer opacity-0 disabled:cursor-wait"
                       />
                     </label>
-
-                    <input
-                      type="url"
-                      value={formData.image}
-                      onChange={(e) => setFormData({ ...formData, image: e.target.value })}
-                      placeholder="veya resim bağlantısı yapıştırın"
-                      className="flex-1 px-3 py-1.5 rounded-lg border focus:outline-none"
-                      style={{ background: 'var(--card)', borderColor: 'var(--border)', color: 'var(--text)' }}
-                    />
                   </div>
 
                   {formData.image && (
@@ -1043,20 +1039,11 @@ export default function AdminPage() {
                               <span className="truncate">{c.name}</span>
                             </div>
                             <div className="flex flex-col gap-2 sm:flex-row">
-                              <label className="inline-flex shrink-0 cursor-pointer items-center justify-center gap-1.5 rounded-lg border px-2.5 py-1.5 text-[11px] transition hover:border-[var(--accent)]" style={{ borderColor: 'var(--border)', color: 'var(--text)' }}>
+                              <label className="relative inline-flex min-h-10 shrink-0 cursor-pointer items-center justify-center gap-1.5 rounded-lg border px-3 py-2 text-[11px] transition hover:border-[var(--accent)]" style={{ borderColor: 'var(--border)', color: 'var(--text)' }}>
                                 <Upload className="h-3.5 w-3.5" />
                                 {uploadingColorIndex === idx ? 'Yükleniyor…' : c.image ? 'Fotoğrafı değiştir' : 'Renk fotoğrafı ekle'}
-                                <input type="file" accept="image/*" onChange={(e) => handleColorImageFileChange(e, idx)} disabled={uploadingColorIndex !== null} className="hidden" />
+                                <input type="file" accept="image/*" onChange={(e) => handleColorImageFileChange(e, idx)} disabled={uploadingColorIndex !== null} aria-label={`${c.name} rengi için fotoğraf seç`} className="absolute inset-0 h-full w-full cursor-pointer opacity-0 disabled:cursor-wait" />
                               </label>
-                              <input
-                                type="url"
-                                value={c.image || ''}
-                                onChange={(e) => setFormData((prev) => ({ ...prev, colors: prev.colors.map((color, index) => index === idx ? { ...color, image: e.target.value } : color) }))}
-                                placeholder="veya fotoğraf bağlantısı"
-                                aria-label={`${c.name} rengi fotoğraf bağlantısı`}
-                                className="min-w-0 flex-1 rounded-lg border px-2.5 py-1.5 text-[11px] focus:outline-none"
-                                style={{ background: 'var(--bg)', borderColor: 'var(--border)', color: 'var(--text)' }}
-                              />
                             </div>
                           </div>
                           <button type="button" onClick={() => handleRemoveColor(idx)} aria-label={`${c.name} rengini kaldır`} className="rounded-full p-2 transition hover:bg-red-50 hover:text-red-600" style={{ color: 'var(--muted)' }}>
