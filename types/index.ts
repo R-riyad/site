@@ -20,7 +20,7 @@ export interface Product {
   oldPrice?: number;
   description: string;
   features?: string[];
-  image: string;
+  image?: string;
   colors?: ProductColor[];
   badge?: string; // e.g. "Yeni", "Popüler", "Fırsat", "Özel Seri"
   inStock?: boolean;

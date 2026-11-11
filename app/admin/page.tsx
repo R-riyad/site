@@ -272,8 +272,9 @@ export default function AdminPage() {
       alert('Lütfen geçerli bir fiyat giriniz.');
       return;
     }
-    if (!formData.image.trim()) {
-      alert('Lütfen ürün görselini bilgisayarınızdan veya telefonunuzdan seçin.');
+    const hasAnyProductImage = Boolean(formData.image.trim() || formData.colors.some((color) => color.image?.trim()));
+    if (!hasAnyProductImage) {
+      alert('Lütfen ana görsel veya en az bir renk görseli ekleyin.');
       return;
     }
 
@@ -292,7 +293,7 @@ export default function AdminPage() {
       oldPrice: formData.oldPrice ? parseFloat(formData.oldPrice.replace(/[^0-9.]/g, '')) : undefined,
       description: formData.description.trim(),
       features: featuresArray,
-      image: formData.image.trim(),
+      image: formData.image.trim() || undefined,
       badge: formData.badge.trim() || undefined,
       colors: formData.colors,
       inStock: formData.inStock,
@@ -691,9 +692,9 @@ export default function AdminPage() {
                           {/* Image */}
                           <td className="py-2.5 px-4 w-14">
                             <div className="w-10 h-10 rounded-lg overflow-hidden border flex items-center justify-center flex-shrink-0" style={{ background: '#f0ece6', borderColor: 'var(--border)' }}>
-                              {prod.image ? (
+                              {prod.image || prod.colors?.find((color) => color.image)?.image ? (
                                 <img
-                                  src={prod.image}
+                                  src={prod.image || prod.colors?.find((color) => color.image)?.image || ''}
                                   alt={prod.name}
                                   className="w-full h-full object-cover"
                                 />
@@ -975,8 +976,9 @@ export default function AdminPage() {
                 {/* Image Section */}
                 <div className="p-3 rounded-lg border space-y-2" style={{ background: 'var(--bg)', borderColor: 'var(--border)' }}>
                   <label className="block font-medium" style={{ color: 'var(--text)' }}>
-                    Ürün Görseli
+                    Ana Görsel <span className="font-normal" style={{ color: 'var(--muted)' }}>(isteğe bağlı)</span>
                   </label>
+                  <p className="text-[11px]" style={{ color: 'var(--muted)' }}>Ana görsel seçmek zorunda değilsiniz. En az bir renk fotoğrafı ekleyerek ürünü görsellerle gösterebilirsiniz.</p>
 
                   <div className="flex items-center gap-2">
                     <label className="relative inline-flex min-h-11 items-center gap-2 px-4 py-2 rounded-lg border text-xs font-medium cursor-pointer transition hover:opacity-70" style={{ background: 'var(--card)', borderColor: 'var(--border)', color: 'var(--text)' }}>

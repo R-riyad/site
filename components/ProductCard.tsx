@@ -1,18 +1,24 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { Product, ProductColor } from '@/types';
 import { formatPrice } from '@/lib/format';
 
 interface ProductCardProps {
   product: Product;
+  preferredColor?: ProductColor;
   onOpenDetails: (product: Product, selectedColor?: ProductColor) => void;
 }
 
-export default function ProductCard({ product, onOpenDetails }: ProductCardProps) {
-  const [selectedColor, setSelectedColor] = useState<ProductColor | undefined>(undefined);
+export default function ProductCard({ product, preferredColor, onOpenDetails }: ProductCardProps) {
+  const [selectedColor, setSelectedColor] = useState<ProductColor | undefined>(preferredColor);
   const [imageError, setImageError] = useState(false);
-  const visibleImage = selectedColor?.image || product.image;
+  const visibleImage = selectedColor?.image || product.image || product.colors?.find((color) => color.image)?.image;
+
+  useEffect(() => {
+    setSelectedColor(preferredColor);
+    setImageError(false);
+  }, [preferredColor]);
 
   const handleColorClick = (e: React.MouseEvent, color: ProductColor) => {
     e.stopPropagation();
@@ -64,6 +70,18 @@ export default function ProductCard({ product, onOpenDetails }: ProductCardProps
         {/* Color dots */}
         {product.colors && product.colors.length > 0 && (
           <div className="flex items-center gap-1.5 pt-1">
+            {product.image && (
+              <button
+                type="button"
+                onClick={(e) => { e.stopPropagation(); setSelectedColor(undefined); setImageError(false); }}
+                title="Ana görsel"
+                aria-label="Ana görseli göster"
+                className="h-5 w-5 overflow-hidden rounded-full border transition"
+                style={{ borderColor: !selectedColor ? 'var(--accent)' : 'var(--border)', boxShadow: !selectedColor ? '0 0 0 1px var(--accent)' : 'none' }}
+              >
+                <img src={product.image} alt="" className="h-full w-full object-cover" />
+              </button>
+            )}
             {product.colors.map((color, idx) => {
               const isSelected = selectedColor?.name === color.name;
               return (

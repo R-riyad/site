@@ -56,17 +56,23 @@ export default function HomePage() {
   const filteredProducts = useMemo(() => {
     return data.products.filter((product) => {
       const matchesCategory =
-        selectedCategory === 'all' || product.category.toLowerCase() === selectedCategory.toLowerCase();
-      const query = searchQuery.trim().toLowerCase();
+        selectedCategory === 'all' || product.category.toLocaleLowerCase('tr-TR') === selectedCategory.toLocaleLowerCase('tr-TR');
+      const query = searchQuery.trim().toLocaleLowerCase('tr-TR');
       const matchesSearch =
         !query ||
-        product.name.toLowerCase().includes(query) ||
-        product.description.toLowerCase().includes(query) ||
-        product.category.toLowerCase().includes(query) ||
-        (product.features && product.features.some((f) => f.toLowerCase().includes(query)));
+        product.name.toLocaleLowerCase('tr-TR').includes(query) ||
+        product.description.toLocaleLowerCase('tr-TR').includes(query) ||
+        product.category.toLocaleLowerCase('tr-TR').includes(query) ||
+        product.colors?.some((color) => color.name.toLocaleLowerCase('tr-TR').includes(query)) ||
+        (product.features && product.features.some((f) => f.toLocaleLowerCase('tr-TR').includes(query)));
       return matchesCategory && matchesSearch;
     });
   }, [data.products, selectedCategory, searchQuery]);
+
+  const preferredColorForSearch = (product: Product) => {
+    const query = searchQuery.trim().toLocaleLowerCase('tr-TR');
+    return query ? product.colors?.find((color) => color.name.toLocaleLowerCase('tr-TR').includes(query)) : undefined;
+  };
 
   const groupedSections = useMemo(() => {
     return CATEGORY_GROUPS.map((group) => ({
@@ -183,6 +189,7 @@ export default function HomePage() {
                         <ProductCard
                           key={product.id}
                           product={product}
+                          preferredColor={preferredColorForSearch(product)}
                           onOpenDetails={handleOpenDetails}
                         />
                       ))}
@@ -216,6 +223,7 @@ export default function HomePage() {
                     <ProductCard
                       key={product.id}
                       product={product}
+                      preferredColor={preferredColorForSearch(product)}
                       onOpenDetails={handleOpenDetails}
                     />
                   ))}

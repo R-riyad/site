@@ -21,7 +21,7 @@ export default function ProductModal({
   const [selectedColor, setSelectedColor] = useState<ProductColor | undefined>(initialColor);
   const [imageError, setImageError] = useState(false);
   const [copiedToast, setCopiedToast] = useState(false);
-  const visibleImage = selectedColor?.image || product?.image;
+  const visibleImage = selectedColor?.image || product?.image || product?.colors?.find((color) => color.image)?.image;
 
   useEffect(() => {
     if (product) {
@@ -124,9 +124,21 @@ export default function ProductModal({
                 {product.colors && product.colors.length > 0 && (
                   <div className="mb-6">
                     <p className="text-xs mb-2.5" style={{ color: 'var(--muted)' }}>
-                      Renk: <span style={{ color: 'var(--text)' }}>{selectedColor?.name || 'Seçin'}</span>
+                      Renk: <span style={{ color: 'var(--text)' }}>{selectedColor?.name || (product.image ? 'Ana görsel' : 'Seçin')}</span>
                     </p>
                     <div className="flex items-center gap-2 flex-wrap">
+                      {product.image && (
+                        <button
+                          type="button"
+                          onClick={() => { setSelectedColor(undefined); setImageError(false); }}
+                          title="Ana görsel"
+                          aria-label="Ana görseli göster"
+                          className="h-8 w-8 overflow-hidden rounded-full border transition"
+                          style={{ borderColor: !selectedColor ? 'var(--accent)' : 'var(--border)', boxShadow: !selectedColor ? '0 0 0 1px var(--accent)' : 'none' }}
+                        >
+                          <img src={product.image} alt="" className="h-full w-full object-cover" />
+                        </button>
+                      )}
                       {product.colors.map((color, idx) => {
                         const isSelected = selectedColor?.name === color.name;
                         return (
