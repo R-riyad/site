@@ -10,9 +10,7 @@ interface ProductCardProps {
 }
 
 export default function ProductCard({ product, onOpenDetails }: ProductCardProps) {
-  const [selectedColor, setSelectedColor] = useState<ProductColor | undefined>(
-    product.colors && product.colors.length > 0 ? product.colors[0] : undefined
-  );
+  const [selectedColor, setSelectedColor] = useState<ProductColor | undefined>(undefined);
   const [imageError, setImageError] = useState(false);
   const visibleImage = selectedColor?.image || product.image;
 
@@ -67,7 +65,7 @@ export default function ProductCard({ product, onOpenDetails }: ProductCardProps
         {product.colors && product.colors.length > 0 && (
           <div className="flex items-center gap-1.5 pt-1">
             {product.colors.map((color, idx) => {
-              const isSelected = (selectedColor?.name || product.colors?.[0]?.name) === color.name;
+              const isSelected = selectedColor?.name === color.name;
               return (
                 <button
                   key={idx}

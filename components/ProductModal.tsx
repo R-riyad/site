@@ -25,7 +25,7 @@ export default function ProductModal({
 
   useEffect(() => {
     if (product) {
-      setSelectedColor(initialColor || (product.colors && product.colors[0]));
+      setSelectedColor(initialColor);
       setImageError(false);
       setCopiedToast(false);
     }
@@ -124,11 +124,11 @@ export default function ProductModal({
                 {product.colors && product.colors.length > 0 && (
                   <div className="mb-6">
                     <p className="text-xs mb-2.5" style={{ color: 'var(--muted)' }}>
-                      Renk: <span style={{ color: 'var(--text)' }}>{selectedColor?.name || product.colors[0]?.name}</span>
+                      Renk: <span style={{ color: 'var(--text)' }}>{selectedColor?.name || 'Seçin'}</span>
                     </p>
                     <div className="flex items-center gap-2 flex-wrap">
                       {product.colors.map((color, idx) => {
-                        const isSelected = (selectedColor?.name || product.colors?.[0]?.name) === color.name;
+                        const isSelected = selectedColor?.name === color.name;
                         return (
                           <button
                             key={idx}
