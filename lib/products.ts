@@ -1,12 +1,20 @@
 import fs from 'fs';
 import path from 'path';
+import { Redis } from '@upstash/redis';
 import { getCloudflareContext } from '@opennextjs/cloudflare';
 import { StoreData } from '@/types';
 import defaultData from '@/data/products.json';
 export { formatPrice } from './format';
 
 const DATA_FILE_PATH = path.join(process.cwd(), 'data', 'products.json');
+const REDIS_KEY = 'vitrin_store_data';
 let inMemoryStore: StoreData = defaultData as StoreData;
+
+function getRedisClient() {
+  const url = process.env.UPSTASH_REDIS_REST_URL || process.env.KV_REST_API_URL || process.env.STORAGE_REST_API_URL;
+  const token = process.env.UPSTASH_REDIS_REST_TOKEN || process.env.KV_REST_API_TOKEN || process.env.STORAGE_REST_API_TOKEN;
+  return url && token ? new Redis({ url, token }) : null;
+}
 
 async function getDatabase() {
   try {
@@ -55,6 +63,22 @@ export async function getStoreDataAsync(): Promise<StoreData> {
     inMemoryStore = seed;
     return seed;
   }
+  const redis = getRedisClient();
+  if (redis) {
+    try {
+      const parsed = parseStoreData(await redis.get(REDIS_KEY));
+      if (parsed) {
+        inMemoryStore = publicStoreData(parsed);
+        return inMemoryStore;
+      }
+      const seed = publicStoreData(defaultData as StoreData);
+      await redis.set(REDIS_KEY, seed);
+      inMemoryStore = seed;
+      return seed;
+    } catch (error) {
+      console.warn('Could not read from Vercel KV/Upstash:', error);
+    }
+  }
   try {
     if (fs.existsSync(DATA_FILE_PATH)) {
       const fileContent = fs.readFileSync(DATA_FILE_PATH, 'utf-8');
@@ -98,6 +122,21 @@ export async function saveStoreDataAsync(data: StoreData): Promise<boolean> {
       return true;
     } catch (error) {
       console.error('Could not save store data to D1:', error);
+      return false;
+    }
+  }
+  const redis = getRedisClient();
+  if (redis) {
+    try {
+      const payload = JSON.stringify(safeData);
+      if (new TextEncoder().encode(payload).byteLength > 900_000) {
+        console.error('Store data exceeds the safe Vercel KV value size. Use uploaded image URLs instead of embedded image data.');
+        return false;
+      }
+      await redis.set(REDIS_KEY, safeData);
+      return true;
+    } catch (error) {
+      console.error('Could not save store data to Vercel KV/Upstash:', error);
       return false;
     }
   }

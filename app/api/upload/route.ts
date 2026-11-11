@@ -31,6 +31,17 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ success: true, url: `/api/uploads/${key}`, type: 'r2' });
     }
 
+    if (process.env.BLOB_STORE_ID || process.env.BLOB_READ_WRITE_TOKEN) {
+      const { put } = await import('@vercel/blob');
+      await put(key, file, {
+        access: 'private',
+        addRandomSuffix: false,
+        contentType: file.type,
+        cacheControlMaxAge: 31536000,
+      });
+      return NextResponse.json({ success: true, url: `/api/uploads/${key}`, type: 'vercel_blob' });
+    }
+
     const uploadsDir = path.join(process.cwd(), 'public', 'uploads');
     await fs.mkdir(uploadsDir, { recursive: true });
     await fs.writeFile(path.join(uploadsDir, key), bytes);
