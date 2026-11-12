@@ -8,7 +8,7 @@ echo.
 echo 1. Sunucu başlatılıyor...
 echo 2. Tarayıcınızda Yönetim Paneli açılacak.
 echo.
-echo Panel Giriş Şifreniz: 1234
+echo Panel Giriş Şifreniz: 212408
 echo (Bu şifreyi panel içerisindeki 'Ayarlar' sekmesinden değiştirebilirsiniz)
 echo.
 echo Panel penceresini kapatmak istediğinizde bu siyah ekranı kapatabilirsiniz.

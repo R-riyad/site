@@ -6,7 +6,7 @@
 
 ## Yönetim paneli
 
-Varsayılan giriş PIN'i `1234`'tür. Panelden ürün ekleyip düzenleyebilir, görsel yükleyebilir, site bilgilerini ve WhatsApp numarasını güncelleyebilir, ürün verilerini JSON olarak yedekleyebilirsiniz. Görseller `public/uploads` altında, ürünler ve ayarlar `data/products.json` içinde tutulur.
+Varsayılan giriş PIN'i `212408`'dir. Panelden ürün ekleyip düzenleyebilir, görsel yükleyebilir, site bilgilerini ve WhatsApp numarasını güncelleyebilir, ürün verilerini JSON olarak yedekleyebilirsiniz. Görseller `public/uploads` altında, ürünler ve ayarlar `data/products.json` içinde tutulur.
 
 ## Vercel bağlantısı
 
