@@ -2,7 +2,7 @@
 chcp 65001 > nul
 title Vitrin Yonetim Paneli Baslatiliyor...
 echo ========================================================
-echo       LÜKS VITRIN - YÖNETİM PANELİ BAŞLATILIYOR
+echo       TEKİN - YÖNETİM PANELİ BAŞLATILIYOR
 echo ========================================================
 echo.
 echo 1. Sunucu başlatılıyor...

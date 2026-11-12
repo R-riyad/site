@@ -2,7 +2,7 @@
 chcp 65001 > nul
 title Vitrin Sitesi Aciliyor...
 echo ========================================================
-echo               LÜKS VITRIN SİTESİ
+echo               TEKİN MAĞAZA SİTESİ
 echo ========================================================
 echo.
 echo Tarayıcınızda vitrin sitesi açılıyor: http://localhost:3000

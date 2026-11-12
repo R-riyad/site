@@ -1,4 +1,4 @@
-# Lüks Vitrin Kullanım Rehberi
+# TEKİN Mağaza Kullanım Rehberi
 
 ## Siteyi başlatma
 
